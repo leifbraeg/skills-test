@@ -1,7 +1,7 @@
 {
   "name": "Code Reviewer",
   "description": "Performs thorough code reviews with security analysis.",
-  "tags": ["Claude Code", "Cursor"],
+  "tags": ["Claude Code", "Cursor", "Gemini", "Something else"],
   "author": "alice",
   "version": "1.0.0",
   "url": "https://github.com/alice/my-skills-repo"
