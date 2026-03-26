@@ -1661,7 +1661,7 @@
 
   async function unzipSkillFile(file) {
     const zip = await JSZip.loadAsync(file);
-    const zipFiles = {};
+    let zipFiles = {};
     await Promise.all(
       Object.entries(zip.files)
         .filter(([, entry]) => !entry.dir)
@@ -1669,6 +1669,18 @@
           zipFiles[path] = await entry.async('base64');
         })
     );
+
+    // Strip common root folder if present (e.g. aperio-update/SKILL.md → SKILL.md)
+    const paths = Object.keys(zipFiles);
+    if (paths.length) {
+      const prefix = paths[0].split('/')[0] + '/';
+      if (paths.every(p => p.startsWith(prefix))) {
+        const stripped = {};
+        for (const [p, c] of Object.entries(zipFiles)) stripped[p.slice(prefix.length)] = c;
+        zipFiles = stripped;
+      }
+    }
+
     let meta = null;
     const jsonKey = Object.keys(zipFiles).find(p => p === 'skill.json' || p.endsWith('/skill.json'));
     if (jsonKey) {
