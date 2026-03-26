@@ -584,6 +584,287 @@
     }
     .token-clear-btn:hover { color: #ef4444; border-color: #ef4444; }
 
+    /* ── Upload button (header) ── */
+    .upload-btn {
+      background: var(--fg);
+      color: var(--bg);
+      border: none;
+      border-radius: 6px;
+      padding: 5px 11px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+      transition: opacity .1s;
+    }
+    .upload-btn:hover { opacity: .82; }
+
+    /* ── Upload modal ── */
+    .upload-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      z-index: 200;
+    }
+    .upload-overlay.open { display: block; }
+
+    .upload-modal {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 520px;
+      max-width: calc(100vw - 32px);
+      max-height: calc(100vh - 48px);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.12);
+      z-index: 201;
+      display: none;
+      flex-direction: column;
+    }
+    .upload-modal.open { display: flex; }
+
+    .upload-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .upload-modal-title { font-weight: 600; font-size: 14px; }
+
+    .upload-modal-body {
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── Form fields ── */
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+
+    .form-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--fg);
+    }
+    .form-label .form-required { color: #ef4444; margin-left: 2px; }
+    .form-optional { font-weight: 400; color: var(--muted); }
+
+    .form-input {
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      background: var(--surface);
+      color: var(--fg);
+      outline: none;
+      width: 100%;
+    }
+    .form-input:focus { border-color: var(--fg); background: var(--bg); }
+    .form-input::placeholder { color: var(--muted); }
+
+    .form-textarea {
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      background: var(--surface);
+      color: var(--fg);
+      outline: none;
+      resize: vertical;
+      width: 100%;
+      line-height: 1.5;
+      font-family: inherit;
+    }
+    .form-textarea:focus { border-color: var(--fg); background: var(--bg); }
+    .form-textarea::placeholder { color: var(--muted); }
+
+    .form-hint { font-size: 11px; color: var(--muted); }
+
+    .folder-preview {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      overflow: hidden;
+      transition: border-color .1s;
+    }
+    .folder-preview:focus-within { border-color: var(--fg); background: var(--bg); }
+    .folder-prefix {
+      padding: 7px 0 7px 10px;
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+      font-family: ui-monospace, monospace;
+    }
+    .folder-input {
+      border: none !important;
+      background: transparent !important;
+      border-radius: 0 !important;
+      padding-left: 2px !important;
+      font-family: ui-monospace, monospace;
+      flex: 1;
+    }
+    .folder-input:focus { background: transparent !important; }
+
+    .upload-file-list {
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .upload-file-list-header {
+      padding: 7px 10px;
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .upload-file-item {
+      padding: 5px 10px;
+      font-size: 12px;
+      font-family: ui-monospace, monospace;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .upload-file-item:last-child { border-bottom: none; }
+
+    .form-actions {
+      display: flex;
+      gap: 8px;
+      padding-top: 2px;
+    }
+    .form-cancel-btn {
+      padding: 8px 14px;
+      background: none;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: color .1s, border-color .1s;
+    }
+    .form-cancel-btn:hover { color: var(--fg); border-color: #9ca3af; }
+
+    .form-submit-btn {
+      flex: 1;
+      padding: 8px 0;
+      background: var(--fg);
+      color: var(--bg);
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity .1s;
+    }
+    .form-submit-btn:hover { opacity: .85; }
+    .form-submit-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── Upload progress ── */
+    .upload-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 8px 0;
+    }
+    .upload-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .upload-step-icon {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+    }
+    .upload-step.active .upload-step-icon {
+      border-color: var(--fg);
+      border-top-color: transparent;
+      animation: spin .6s linear infinite;
+    }
+    .upload-step.active { color: var(--fg); }
+    .upload-step.done .upload-step-icon {
+      background: var(--fg);
+      border-color: var(--fg);
+      color: var(--bg);
+    }
+    .upload-step.done { color: var(--muted); }
+
+    /* ── PR success ── */
+    .pr-success {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      text-align: center;
+    }
+    .pr-success-icon {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .pr-success-title { font-weight: 600; font-size: 14px; }
+    .pr-success-desc { font-size: 12px; color: var(--muted); }
+    .pr-link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: var(--fg);
+      color: var(--bg);
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity .1s;
+    }
+    .pr-link-btn:hover { opacity: .85; }
+    .pr-done-btn {
+      padding: 8px 16px;
+      background: none;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: color .1s;
+    }
+    .pr-done-btn:hover { color: var(--fg); }
+
+    .upload-error-msg {
+      padding: 10px 12px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #dc2626;
+    }
+
     /* ── Download button (overview pane) ── */
     .download-btn {
       display: inline-flex;
@@ -611,6 +892,13 @@
     <input class="search" type="search" id="search" placeholder="Search skills…" autocomplete="off">
   </div>
   <span id="header-count"></span>
+  <button class="upload-btn" id="upload-btn">
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path d="M8.75 1.75a.75.75 0 0 0-1.5 0V8H3.56l.97-.97a.749.749 0 1 0-1.06-1.06l-2.25 2.25a.749.749 0 0 0 0 1.06l2.25 2.25a.749.749 0 1 0 1.06-1.06L3.56 9.5H7.25v4.75a.75.75 0 0 0 1.5 0V9.5h3.69l-.97.97a.749.749 0 1 0 1.06 1.06l2.25-2.25a.749.749 0 0 0 0-1.06L12.53 5.97a.749.749 0 1 0-1.06 1.06l.97.97H8.75V1.75Z"/>
+    </svg>
+    Upload skill
+  </button>
+  <input type="file" id="file-input" accept=".skill" style="display:none">
   <button class="settings-btn" id="settings-btn" title="GitHub Token">
     <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
       <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm4.879-2.773 4.264 2.559a.25.25 0 0 1 0 .428l-4.264 2.559A.25.25 0 0 1 6 10.559V5.442a.25.25 0 0 1 .379-.215Z"/>
@@ -618,6 +906,15 @@
     <span class="token-dot" id="token-dot"></span>
   </button>
 </header>
+
+<div class="upload-overlay" id="upload-overlay"></div>
+<div class="upload-modal" id="upload-modal">
+  <div class="upload-modal-header">
+    <div class="upload-modal-title" id="upload-modal-title">Upload skill</div>
+    <button class="close-btn" id="upload-close">✕</button>
+  </div>
+  <div class="upload-modal-body" id="upload-modal-body"></div>
+</div>
 
 <div class="token-overlay" id="token-overlay"></div>
 <div class="token-modal" id="token-modal">
@@ -1308,6 +1605,246 @@
 
   $tokenSaveBtn.disabled = true;
   updateTokenDot();
+
+  // ── GitHub write API ─────────────────────────────────────────────────────────
+  async function ghFetch(method, path, body) {
+    const r = await fetch(`${GH}${path}`, {
+      method,
+      headers: { ...getHeaders(), 'Content-Type': 'application/json' },
+      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+    });
+    if (!r.ok) {
+      const msg = await r.json().then(j => j.message).catch(() => r.statusText);
+      throw new Error(`GitHub ${r.status}: ${msg}`);
+    }
+    return r.json();
+  }
+
+  // ── Upload skill ──────────────────────────────────────────────────────────────
+  const $uploadBtn      = document.getElementById('upload-btn');
+  const $fileInput      = document.getElementById('file-input');
+  const $uploadOverlay  = document.getElementById('upload-overlay');
+  const $uploadModal    = document.getElementById('upload-modal');
+  const $uploadClose    = document.getElementById('upload-close');
+  const $uploadTitle    = document.getElementById('upload-modal-title');
+  const $uploadBody     = document.getElementById('upload-modal-body');
+
+  function openUploadModal()  { $uploadOverlay.classList.add('open'); $uploadModal.classList.add('open'); }
+  function closeUploadModal() { $uploadOverlay.classList.remove('open'); $uploadModal.classList.remove('open'); }
+
+  $uploadClose.addEventListener('click', closeUploadModal);
+  $uploadOverlay.addEventListener('click', closeUploadModal);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && $uploadModal.classList.contains('open')) closeUploadModal();
+  });
+
+  $uploadBtn.addEventListener('click', () => {
+    if (!activeToken()) { openTokenModal(); return; }
+    $fileInput.click();
+  });
+
+  $fileInput.addEventListener('change', async e => {
+    const file = e.target.files[0];
+    $fileInput.value = '';
+    if (!file) return;
+    $uploadTitle.textContent = 'Upload skill';
+    $uploadBody.innerHTML = loadingHTML();
+    openUploadModal();
+    try {
+      const { zipFiles, meta } = await unzipSkillFile(file);
+      const defaultFolder = file.name.replace(/\.skill$/i, '');
+      showUploadForm(zipFiles, meta, defaultFolder);
+    } catch (err) {
+      $uploadBody.innerHTML = `<div class="upload-error-msg">Could not read .skill file: ${esc(err.message)}</div>`;
+    }
+  });
+
+  async function unzipSkillFile(file) {
+    const zip = await JSZip.loadAsync(file);
+    const zipFiles = {};
+    await Promise.all(
+      Object.entries(zip.files)
+        .filter(([, entry]) => !entry.dir)
+        .map(async ([path, entry]) => {
+          zipFiles[path] = await entry.async('base64');
+        })
+    );
+    let meta = null;
+    const jsonKey = Object.keys(zipFiles).find(p => p === 'skill.json' || p.endsWith('/skill.json'));
+    if (jsonKey) {
+      try { meta = JSON.parse(atob(zipFiles[jsonKey])); } catch {}
+    }
+    return { zipFiles, meta };
+  }
+
+  function showUploadForm(zipFiles, existingMeta, defaultFolder) {
+    const m = existingMeta || {};
+    const initSlug = slugify(m.name || defaultFolder || '');
+    const extraFields = metadataFields.filter(f => !['name', 'description'].includes(f.key));
+
+    const extraHtml = extraFields.map(f => {
+      const raw = m[f.key];
+      const val = raw ? (Array.isArray(raw) ? raw.join(', ') : raw) : '';
+      const type = f.type === 'link' ? 'url' : 'text';
+      const ph   = f.type === 'array' ? 'tag1, tag2, …' : '';
+      return `<div class="form-group">
+        <label class="form-label">${esc(f.label)}</label>
+        <input class="form-input" type="${type}" name="field-${esc(f.key)}" value="${esc(val)}" placeholder="${esc(ph)}">
+      </div>`;
+    }).join('');
+
+    const fileListHtml = Object.keys(zipFiles)
+      .map(p => `<div class="upload-file-item">${esc(p)}</div>`).join('');
+
+    $uploadBody.innerHTML = `
+      <div class="form-group">
+        <label class="form-label">Name <span class="form-required">*</span></label>
+        <input class="form-input" type="text" id="up-name" value="${esc(m.name || '')}" placeholder="My Skill">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description <span class="form-required">*</span></label>
+        <textarea class="form-textarea" id="up-desc" rows="3" placeholder="What does this skill do?">${esc(m.description || '')}</textarea>
+      </div>
+      ${extraHtml}
+      <div class="form-group">
+        <label class="form-label">Folder name <span class="form-required">*</span></label>
+        <div class="folder-preview">
+          <span class="folder-prefix">${esc(skillsPath)}/</span>
+          <input class="form-input folder-input" type="text" id="up-folder" value="${esc(initSlug)}" placeholder="my-skill">
+        </div>
+        <div class="form-hint">Folder that will be created in the repository</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">PR description <span class="form-optional">(optional)</span></label>
+        <textarea class="form-textarea" id="up-pr-desc" rows="2" placeholder="What's new or notable about this skill?"></textarea>
+      </div>
+      <div class="upload-file-list">
+        <div class="upload-file-list-header">${Object.keys(zipFiles).length} file${Object.keys(zipFiles).length !== 1 ? 's' : ''} to upload</div>
+        ${fileListHtml}
+      </div>
+      <div class="form-actions">
+        <button class="form-cancel-btn" id="up-cancel">Cancel</button>
+        <button class="form-submit-btn" id="up-submit">Open Pull Request →</button>
+      </div>`;
+
+    const $nameInput   = document.getElementById('up-name');
+    const $folderInput = document.getElementById('up-folder');
+    let folderTouched  = initSlug !== '';
+
+    $nameInput.addEventListener('input', () => {
+      if (!folderTouched) $folderInput.value = slugify($nameInput.value);
+    });
+    $folderInput.addEventListener('input', () => { folderTouched = true; });
+
+    document.getElementById('up-cancel').addEventListener('click', closeUploadModal);
+    document.getElementById('up-submit').addEventListener('click', () => {
+      submitSkillPR(zipFiles, extraFields);
+    });
+  }
+
+  async function submitSkillPR(zipFiles, extraFields) {
+    const name   = document.getElementById('up-name').value.trim();
+    const desc   = document.getElementById('up-desc').value.trim();
+    const folder = document.getElementById('up-folder').value.trim();
+    const prNote = document.getElementById('up-pr-desc').value.trim();
+    if (!name || !folder) return;
+
+    // Collect extra field values from the form
+    const meta = { name, description: desc };
+    extraFields.forEach(f => {
+      const el = $uploadBody.querySelector(`[name="field-${f.key}"]`);
+      if (!el) return;
+      const val = el.value.trim();
+      if (!val) return;
+      meta[f.key] = f.type === 'array' ? val.split(',').map(s => s.trim()).filter(Boolean) : val;
+    });
+
+    // Build final file map — always use form data for skill.json
+    const files = { ...zipFiles };
+    const existingJson = Object.keys(files).find(p => p === 'skill.json' || p.endsWith('/skill.json'));
+    if (existingJson) delete files[existingJson];
+    files['skill.json'] = btoa(unescape(encodeURIComponent(JSON.stringify(meta, null, 2))));
+
+    showUploadProgress();
+
+    try {
+      setStep('branch', 'active');
+      const ref        = await ghFetch('GET', `/repos/${repo}/git/ref/heads/${branch}`);
+      const baseSha    = ref.object.sha;
+      const baseCommit = await ghFetch('GET', `/repos/${repo}/git/commits/${baseSha}`);
+      setStep('branch', 'done');
+
+      setStep('files', 'active');
+      const treeItems = await Promise.all(
+        Object.entries(files).map(async ([filePath, b64]) => {
+          const blob = await ghFetch('POST', `/repos/${repo}/git/blobs`, { content: b64, encoding: 'base64' });
+          return { path: `${skillsPath}/${folder}/${filePath}`, mode: '100644', type: 'blob', sha: blob.sha };
+        })
+      );
+      setStep('files', 'done');
+
+      setStep('pr', 'active');
+      const tree      = await ghFetch('POST', `/repos/${repo}/git/trees`, { base_tree: baseCommit.tree.sha, tree: treeItems });
+      const newCommit = await ghFetch('POST', `/repos/${repo}/git/commits`, { message: `Add skill: ${name}`, tree: tree.sha, parents: [baseSha] });
+      const prBranch  = `skill/${folder}-${Date.now()}`;
+      await ghFetch('POST', `/repos/${repo}/git/refs`, { ref: `refs/heads/${prBranch}`, sha: newCommit.sha });
+      const pr = await ghFetch('POST', `/repos/${repo}/pulls`, {
+        title: `Add skill: ${name}`,
+        body:  prNote || `Adds the **${name}** skill.\n\n${desc}`,
+        head:  prBranch,
+        base:  branch,
+      });
+      setStep('pr', 'done');
+      showPRSuccess(pr.html_url, name);
+    } catch (err) {
+      $uploadBody.querySelector('.upload-steps').insertAdjacentHTML(
+        'afterend', `<div class="upload-error-msg">${esc(err.message)}</div>`
+      );
+    }
+  }
+
+  function showUploadProgress() {
+    $uploadTitle.textContent = 'Opening pull request…';
+    $uploadBody.innerHTML = `
+      <div class="upload-steps">
+        <div class="upload-step" id="step-branch">
+          <div class="upload-step-icon"></div><span>Creating branch</span>
+        </div>
+        <div class="upload-step" id="step-files">
+          <div class="upload-step-icon"></div><span>Uploading files</span>
+        </div>
+        <div class="upload-step" id="step-pr">
+          <div class="upload-step-icon"></div><span>Opening pull request</span>
+        </div>
+      </div>`;
+  }
+
+  function setStep(key, state) {
+    const el = document.getElementById(`step-${key}`);
+    if (!el) return;
+    el.className = `upload-step ${state}`;
+    el.querySelector('.upload-step-icon').textContent = state === 'done' ? '✓' : '';
+  }
+
+  function showPRSuccess(prUrl, skillName) {
+    $uploadTitle.textContent = 'Pull request opened';
+    $uploadBody.innerHTML = `
+      <div class="pr-success">
+        <div class="pr-success-icon">✓</div>
+        <div class="pr-success-title">${esc(skillName)} is ready for review</div>
+        <div class="pr-success-desc">A pull request has been opened. Once merged, the skill will appear in the library.</div>
+        <a class="pr-link-btn" href="${esc(prUrl)}" target="_blank" rel="noopener">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M7.177 3.073L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354ZM3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-2.25.75a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25ZM11 2.5h-1V4h1a1 1 0 0 1 1 1v5.628a2.251 2.251 0 1 0 1.5 0V5A2.5 2.5 0 0 0 11 2.5Zm1 10.25a.75.75 0 1 1 1.5 0 .75.75 0 0 1-1.5 0Zm-9.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z"/></svg>
+          View Pull Request
+        </a>
+        <button class="pr-done-btn" id="pr-done-btn">Done</button>
+      </div>`;
+    document.getElementById('pr-done-btn').addEventListener('click', closeUploadModal);
+  }
+
+  function slugify(str) {
+    return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
   function toArray(v) {
