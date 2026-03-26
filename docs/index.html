@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skills</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:              #ffffff;
+      --fg:              #0a0a0a;
+      --muted:           #6b7280;
+      --border:          #e5e7eb;
+      --surface:         #f9fafb;
+      --tag-bg:          #f3f4f6;
+      --tag-fg:          #374151;
+      --tag-active-bg:   #0a0a0a;
+      --tag-active-fg:   #ffffff;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Header ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .logo {
+      font-weight: 600;
+      font-size: 15px;
+      white-space: nowrap;
+    }
+
+    .search-wrap { flex: 1; max-width: 380px; }
+
+    .search {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      background: var(--surface);
+      color: var(--fg);
+      outline: none;
+    }
+    .search:focus { border-color: var(--fg); }
+    .search::placeholder { color: var(--muted); }
+
+    #header-count {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    /* ── Tag filter bar ── */
+    #tags-bar {
+      padding: 8px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .tags-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-right: 2px;
+    }
+
+    .tag {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      background: var(--tag-bg);
+      color: var(--tag-fg);
+      border: 1px solid transparent;
+      transition: border-color .1s, background .1s, color .1s;
+      user-select: none;
+    }
+    .tag:hover { border-color: var(--border); }
+    .tag.active { background: var(--tag-active-bg); color: var(--tag-active-fg); }
+
+    /* ── Main ── */
+    main { padding: 20px 24px; }
+
+    /* ── Skill grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 10px;
+    }
+
+    /* ── Skill card ── */
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: border-color .1s, box-shadow .1s;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .card:hover {
+      border-color: #9ca3af;
+      box-shadow: 0 1px 6px rgba(0,0,0,.06);
+    }
+
+    .card-name {
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--muted);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      flex: 1;
+    }
+
+    .card-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+      margin-top: 2px;
+    }
+
+    .card-tag {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      background: var(--tag-bg);
+      color: var(--tag-fg);
+    }
+
+    .card-field {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── Detail panel ── */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.35);
+      z-index: 100;
+    }
+    .overlay.open { display: block; }
+
+    .panel {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 460px;
+      max-width: 100%;
+      background: var(--bg);
+      border-left: 1px solid var(--border);
+      z-index: 101;
+      overflow-y: auto;
+      transform: translateX(100%);
+      transition: transform .2s ease;
+    }
+    .panel.open { transform: translateX(0); }
+
+    .panel-header {
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 18px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-title {
+      font-weight: 600;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 16px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .close-btn:hover { background: var(--surface); color: var(--fg); }
+
+    .panel-body { padding: 18px; }
+
+    .panel-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.65;
+      margin-bottom: 18px;
+    }
+
+    .panel-tags {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .panel-tag {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      background: var(--tag-bg);
+      color: var(--tag-fg);
+    }
+
+    .meta-table { width: 100%; border-collapse: collapse; }
+
+    .meta-table tr { border-bottom: 1px solid var(--border); }
+    .meta-table tr:last-child { border-bottom: none; }
+
+    .meta-table td {
+      padding: 8px 0;
+      font-size: 13px;
+      vertical-align: top;
+    }
+
+    .meta-table .ml { color: var(--muted); width: 110px; padding-right: 12px; }
+    .meta-table .mv a { color: var(--fg); text-underline-offset: 3px; }
+    .meta-table .mv code {
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      font-size: 12px;
+      background: var(--surface);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    .github-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .github-link:hover { color: var(--fg); }
+
+    /* ── States ── */
+    .state {
+      text-align: center;
+      padding: 72px 24px;
+      color: var(--muted);
+    }
+    .state-title {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--fg);
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--fg);
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+      margin-bottom: 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .no-results { color: var(--muted); font-size: 13px; text-align: center; padding: 40px 0; }
+
+    /* ── Panel: sticky header + tabs wrapper ── */
+    .panel-sticky {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: var(--bg);
+    }
+
+    /* ── Tabs ── */
+    .panel-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      padding: 0 18px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .panel-tabs::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 8px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--muted);
+      white-space: nowrap;
+      margin-bottom: -1px;
+      transition: color .1s, border-color .1s;
+    }
+    .tab-btn:hover { color: var(--fg); }
+    .tab-btn.active { color: var(--fg); border-bottom-color: var(--fg); }
+    .tab-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+    /* ── Tab panes ── */
+    .tab-pane { display: none; padding: 18px; }
+    .tab-pane.active { display: block; }
+
+    .tab-coming-soon {
+      text-align: center;
+      padding: 40px 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── Sub-tabs (secondary row inside a pane) ── */
+    .sub-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      margin: -18px -18px 0;
+      padding: 0 18px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .sub-tabs::-webkit-scrollbar { display: none; }
+
+    .sub-tab-btn {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      cursor: pointer;
+      color: var(--muted);
+      white-space: nowrap;
+      margin-bottom: -1px;
+      transition: color .1s, border-color .1s, background .1s;
+    }
+    .sub-tab-btn:hover { color: var(--fg); }
+    .sub-tab-btn.active {
+      color: var(--fg);
+      border-bottom-color: var(--fg);
+      background: var(--bg);
+    }
+
+    .sub-content { padding-top: 18px; }
+
+    /* ── Markdown content ── */
+    .md-body { font-size: 13px; line-height: 1.7; }
+    .md-body h1 { font-size: 17px; font-weight: 600; margin: 0 0 12px; }
+    .md-body h2 { font-size: 15px; font-weight: 600; margin: 20px 0 8px; }
+    .md-body h3 { font-size: 13px; font-weight: 600; margin: 16px 0 6px; }
+    .md-body h4, .md-body h5, .md-body h6 { font-size: 13px; font-weight: 500; margin: 12px 0 4px; }
+    .md-body p  { margin: 0 0 10px; }
+    .md-body ul, .md-body ol { margin: 0 0 10px 20px; }
+    .md-body li { margin-bottom: 3px; }
+    .md-body a  { color: var(--fg); text-underline-offset: 3px; }
+    .md-body hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    .md-body blockquote {
+      border-left: 3px solid var(--border);
+      margin: 0 0 10px;
+      padding: 4px 12px;
+      color: var(--muted);
+    }
+    .md-body code {
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      font-size: 12px;
+      background: var(--surface);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+    .md-body pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 12px 14px;
+      overflow-x: auto;
+      margin: 0 0 12px;
+    }
+    .md-body pre code {
+      background: none;
+      padding: 0;
+      font-size: 12px;
+    }
+    .md-body table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .md-body th, .md-body td {
+      text-align: left;
+      padding: 6px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .md-body th { font-weight: 500; }
+
+    .md-loading { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 8px; }
+    .md-error   { color: var(--muted); font-size: 13px; font-style: italic; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo" id="app-title">Skills</div>
+  <div class="search-wrap">
+    <input class="search" type="search" id="search" placeholder="Search skills…" autocomplete="off">
+  </div>
+  <span id="header-count"></span>
+</header>
+
+<div id="tags-bar" style="display:none"></div>
+
+<main>
+  <div id="app">
+    <div class="state">
+      <div class="spinner"></div>
+      <div>Loading skills…</div>
+    </div>
+  </div>
+</main>
+
+<div class="overlay" id="overlay"></div>
+<div class="panel" id="panel">
+  <div class="panel-sticky">
+    <div class="panel-header">
+      <div class="panel-title" id="panel-title"></div>
+      <button class="close-btn" id="close-btn" title="Close">✕</button>
+    </div>
+    <div class="panel-tabs" id="panel-tabs">
+      <button class="tab-btn active" data-tab="overview">Overview</button>
+      <button class="tab-btn"        data-tab="skill">Skill</button>
+      <button class="tab-btn" data-tab="scripts">Scripts</button>
+      <button class="tab-btn" data-tab="references">References</button>
+      <button class="tab-btn" data-tab="assets">Assets</button>
+    </div>
+  </div>
+  <div class="tab-pane active" id="pane-overview"></div>
+  <div class="tab-pane"        id="pane-skill"></div>
+  <div class="tab-pane" id="pane-scripts"></div>
+  <div class="tab-pane" id="pane-references"></div>
+  <div class="tab-pane" id="pane-assets"></div>
+</div>
+
+<script src="config.js"></script>
+<script>
+(() => {
+  // ── Config helpers ──────────────────────────────────────────────────────────
+  const cfg = CONFIG;
+  const { repo, branch, skillsPath, skillFile, token, title, metadataFields, predefinedTags } = cfg;
+
+  document.getElementById('app-title').textContent = title || 'Skills';
+  document.title = title || 'Skills';
+
+  // ── GitHub API ──────────────────────────────────────────────────────────────
+  const GH = 'https://api.github.com';
+  const headers = {
+    'Accept': 'application/vnd.github+json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+  };
+
+  async function ghGet(path) {
+    const r = await fetch(`${GH}${path}`, { headers });
+    if (!r.ok) {
+      const msg = await r.json().then(j => j.message).catch(() => r.statusText);
+      throw new Error(`GitHub ${r.status}: ${msg}`);
+    }
+    return r.json();
+  }
+
+  function b64decode(str) {
+    return decodeURIComponent(
+      atob(str.replace(/\s/g, ''))
+        .split('')
+        .map(c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
+        .join('')
+    );
+  }
+
+  // ── State ───────────────────────────────────────────────────────────────────
+  let allSkills  = [];
+  let activeTags = new Set();
+  let query      = '';
+
+  // ── DOM refs ────────────────────────────────────────────────────────────────
+  const $app      = document.getElementById('app');
+  const $tagsBar  = document.getElementById('tags-bar');
+  const $search   = document.getElementById('search');
+  const $count    = document.getElementById('header-count');
+  const $overlay   = document.getElementById('overlay');
+  const $panel     = document.getElementById('panel');
+  const $pTitle    = document.getElementById('panel-title');
+  const $pTabs     = document.getElementById('panel-tabs');
+  const $closeBtn  = document.getElementById('close-btn');
+
+  const panes = {
+    overview:   document.getElementById('pane-overview'),
+    skill:      document.getElementById('pane-skill'),
+    scripts:    document.getElementById('pane-scripts'),
+    references: document.getElementById('pane-references'),
+    assets:     document.getElementById('pane-assets'),
+  };
+
+  // ── Load ────────────────────────────────────────────────────────────────────
+  async function load() {
+    if (!repo || repo.startsWith('your-')) {
+      showError(
+        'Not configured',
+        'Open <code>config.js</code> and set <code>repo</code> to your GitHub repository (e.g. <code>"alice/my-skills"</code>).'
+      );
+      return;
+    }
+
+    try {
+      const contents = await ghGet(`/repos/${repo}/contents/${skillsPath}?ref=${branch}`);
+      const folders   = contents.filter(i => i.type === 'dir');
+
+      if (!folders.length) {
+        showError('No skill folders found', `No sub-folders found in <code>${skillsPath}/</code>.`);
+        return;
+      }
+
+      const results = await Promise.allSettled(
+        folders.map(async folder => {
+          const file = await ghGet(
+            `/repos/${repo}/contents/${skillsPath}/${folder.name}/${skillFile}?ref=${branch}`
+          );
+          const meta = JSON.parse(b64decode(file.content));
+          return {
+            ...meta,
+            _folder: folder.name,
+            _githubUrl: `https://github.com/${repo}/tree/${branch}/${skillsPath}/${folder.name}`,
+          };
+        })
+      );
+
+      allSkills = results
+        .filter(r => r.status === 'fulfilled')
+        .map(r => r.value);
+
+      if (!allSkills.length) {
+        showError('No skills loaded', `Could not parse any <code>${skillFile}</code> files.`);
+        return;
+      }
+
+      buildTagsBar();
+      render();
+    } catch (e) {
+      showError('Failed to load', e.message);
+    }
+  }
+
+  // ── Tags bar ─────────────────────────────────────────────────────────────────
+  function buildTagsBar() {
+    const tags = predefinedTags && predefinedTags.length
+      ? predefinedTags
+      : [...new Set(allSkills.flatMap(s => toArray(s.tags)))].sort((a, b) => a.localeCompare(b));
+
+    if (!tags.length) return;
+
+    $tagsBar.innerHTML = `<span class="tags-label">Filter</span>`;
+    tags.forEach(tag => {
+      const btn = document.createElement('button');
+      btn.className = 'tag';
+      btn.textContent = tag;
+      btn.dataset.tag = tag;
+      btn.addEventListener('click', () => toggleTag(tag, btn));
+      $tagsBar.appendChild(btn);
+    });
+
+    $tagsBar.style.display = 'flex';
+  }
+
+  function toggleTag(tag, btn) {
+    if (activeTags.has(tag)) {
+      activeTags.delete(tag);
+      btn.classList.remove('active');
+    } else {
+      activeTags.add(tag);
+      btn.classList.add('active');
+    }
+    render();
+  }
+
+  // ── Filter ──────────────────────────────────────────────────────────────────
+  function filtered() {
+    const q = query.toLowerCase();
+    return allSkills.filter(s => {
+      if (activeTags.size) {
+        const skillTags = toArray(s.tags).map(t => t.toLowerCase());
+        const match = [...activeTags].every(t => skillTags.includes(t.toLowerCase()));
+        if (!match) return false;
+      }
+      if (q) {
+        const haystack = [s.name, s.description, ...toArray(s.tags)]
+          .filter(Boolean).join(' ').toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      return true;
+    });
+  }
+
+  // ── Render list ──────────────────────────────────────────────────────────────
+  function render() {
+    const skills = filtered();
+    $count.textContent = `${skills.length} / ${allSkills.length}`;
+
+    if (!skills.length) {
+      $app.innerHTML = '<div class="no-results">No skills match your search.</div>';
+      return;
+    }
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    skills.forEach(s => grid.appendChild(buildCard(s)));
+    $app.innerHTML = '';
+    $app.appendChild(grid);
+  }
+
+  function buildCard(skill) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.addEventListener('click', () => openPanelWrapped(skill));
+
+    // Name
+    const name = document.createElement('div');
+    name.className = 'card-name';
+    name.textContent = skill.name || skill._folder;
+    card.appendChild(name);
+
+    // Description
+    if (skill.description) {
+      const desc = document.createElement('div');
+      desc.className = 'card-desc';
+      desc.textContent = skill.description;
+      card.appendChild(desc);
+    }
+
+    // Card-visible metadata fields
+    const cardFields = metadataFields.filter(f => f.card && f.key !== 'tags');
+    const tags = toArray(skill.tags);
+
+    if (tags.length || cardFields.length) {
+      const meta = document.createElement('div');
+      meta.className = 'card-meta';
+
+      tags.forEach(t => {
+        const span = document.createElement('span');
+        span.className = 'card-tag';
+        span.textContent = t;
+        meta.appendChild(span);
+      });
+
+      cardFields.forEach(f => {
+        const val = skill[f.key];
+        if (!val) return;
+        const span = document.createElement('span');
+        span.className = 'card-field';
+        span.textContent = `${f.label}: ${val}`;
+        meta.appendChild(span);
+      });
+
+      card.appendChild(meta);
+    }
+
+    return card;
+  }
+
+  // ── Detail panel ─────────────────────────────────────────────────────────────
+  let activeTab = 'overview';
+
+  function openPanel(skill) {
+    $pTitle.textContent = skill.name || skill._folder;
+
+    // Build overview pane
+    let html = '';
+    if (skill.description) {
+      html += `<p class="panel-desc">${esc(skill.description)}</p>`;
+    }
+    const tags = toArray(skill.tags);
+    if (tags.length) {
+      html += `<div class="panel-tags">${
+        tags.map(t => `<span class="panel-tag">${esc(t)}</span>`).join('')
+      }</div>`;
+    }
+    const detailFields = metadataFields.filter(f => !['name','description','tags'].includes(f.key));
+    const rows = detailFields.map(f => {
+      const val = skill[f.key];
+      if (val === undefined || val === null || val === '') return '';
+      return `<tr><td class="ml">${esc(f.label)}</td><td class="mv">${renderFieldValue(f, val)}</td></tr>`;
+    }).join('');
+    if (rows) html += `<table class="meta-table"><tbody>${rows}</tbody></table>`;
+    if (skill._githubUrl) {
+      html += `<a class="github-link" href="${esc(skill._githubUrl)}" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+            0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+            -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+            .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+            -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0
+            1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82
+            1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01
+            1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        View on GitHub
+      </a>`;
+    }
+    panes.overview.innerHTML = html;
+
+    // Reset lazy panes so they re-fetch on next open
+    panes.skill.innerHTML = '';
+    ['scripts','references','assets'].forEach(s => {
+      delete panes[s].dataset.loadedFor;
+    });
+
+    switchTab('overview', skill);
+    $overlay.classList.add('open');
+    $panel.classList.add('open');
+    $panel.scrollTop = 0;
+  }
+
+  function switchTab(tabName, skill) {
+    activeTab = tabName;
+
+    $pTabs.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    Object.entries(panes).forEach(([key, pane]) => {
+      pane.classList.toggle('active', key === tabName);
+    });
+
+    if (tabName === 'skill' && skill)                              loadSkillMd(skill);
+    if (['scripts','references','assets'].includes(tabName) && skill) loadTabSection(skill, tabName);
+  }
+
+  // ── SKILL.md ─────────────────────────────────────────────────────────────────
+  async function loadSkillMd(skill) {
+    if (panes.skill.innerHTML !== '') return;
+    panes.skill.innerHTML = loadingHTML();
+    try {
+      const file = await ghGet(
+        `/repos/${repo}/contents/${skillsPath}/${skill._folder}/SKILL.md?ref=${branch}`
+      );
+      panes.skill.innerHTML = `<div class="md-body">${marked.parse(b64decode(file.content))}</div>`;
+    } catch (e) {
+      panes.skill.innerHTML = `<div class="md-error">${
+        e.message.includes('404') ? 'No <code>SKILL.md</code> found in this skill\'s folder.' : esc(e.message)
+      }</div>`;
+    }
+  }
+
+  // ── Scripts / References / Assets ────────────────────────────────────────────
+  const SECTION_FOLDER = { scripts: 'scripts', references: 'references', assets: 'assets' };
+
+  async function loadTabSection(skill, section) {
+    const pane = panes[section];
+    if (pane.dataset.loadedFor === skill._folder) return;
+    pane.dataset.loadedFor = '';
+
+    pane.innerHTML = loadingHTML();
+
+    try {
+      const folder = SECTION_FOLDER[section];
+      const items = await ghGet(
+        `/repos/${repo}/contents/${skillsPath}/${skill._folder}/${folder}?ref=${branch}`
+      );
+      const files = items.filter(i => i.type === 'file');
+
+      if (!files.length) {
+        pane.innerHTML = `<div class="tab-coming-soon">No files in <code>${folder}/</code>.</div>`;
+        return;
+      }
+
+      pane.dataset.loadedFor = skill._folder;
+      buildSubTabs(pane, skill, files);
+    } catch (e) {
+      pane.innerHTML = e.message.includes('404')
+        ? `<div class="tab-coming-soon">No <code>${SECTION_FOLDER[section]}/</code> folder found.</div>`
+        : `<div class="md-error">${esc(e.message)}</div>`;
+    }
+  }
+
+  function buildSubTabs(pane, skill, files) {
+    // Sub-tab row
+    const $subTabs = document.createElement('div');
+    $subTabs.className = 'sub-tabs';
+
+    // Content area
+    const $subContent = document.createElement('div');
+    $subContent.className = 'sub-content';
+
+    files.forEach((file, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'sub-tab-btn' + (i === 0 ? ' active' : '');
+      btn.textContent = file.name;
+      btn.addEventListener('click', () => {
+        $subTabs.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        loadSubFile(skill, file, $subContent);
+      });
+      $subTabs.appendChild(btn);
+    });
+
+    pane.innerHTML = '';
+    pane.appendChild($subTabs);
+    pane.appendChild($subContent);
+
+    // Auto-select first file
+    loadSubFile(skill, files[0], $subContent);
+  }
+
+  async function loadSubFile(skill, file, $container) {
+    if (!skill._fileCache) skill._fileCache = {};
+    if (skill._fileCache[file.path] !== undefined) {
+      renderFileContent($container, file, skill._fileCache[file.path]);
+      return;
+    }
+
+    $container.innerHTML = loadingHTML('sub');
+    try {
+      const data = await ghGet(`/repos/${repo}/contents/${file.path}?ref=${branch}`);
+      const content = b64decode(data.content);
+      skill._fileCache[file.path] = content;
+      renderFileContent($container, file, content);
+    } catch (e) {
+      $container.innerHTML = `<div class="md-error">${esc(e.message)}</div>`;
+    }
+  }
+
+  function renderFileContent($container, file, content) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    const IMAGE_EXTS = ['png','jpg','jpeg','gif','svg','webp','avif'];
+
+    if (ext === 'md') {
+      $container.innerHTML = `<div class="md-body">${marked.parse(content)}</div>`;
+    } else if (IMAGE_EXTS.includes(ext)) {
+      const rawUrl = `https://raw.githubusercontent.com/${repo}/${branch}/${file.path}`;
+      $container.innerHTML = `<img src="${esc(rawUrl)}" alt="${esc(file.name)}"
+        style="max-width:100%;border-radius:6px;border:1px solid var(--border)">`;
+    } else {
+      $container.innerHTML = `<pre style="margin:0"><code>${esc(content)}</code></pre>`;
+    }
+  }
+
+  function loadingHTML(size = 'normal') {
+    const s = size === 'sub'
+      ? 'style="width:12px;height:12px;margin:0"'
+      : 'style="width:14px;height:14px;margin:0"';
+    return `<div class="md-loading"><span class="spinner" ${s}></span> Loading…</div>`;
+  }
+
+  // Wire up tab clicks — pass current skill via closure on the tab bar
+  let currentSkill = null;
+  $pTabs.addEventListener('click', e => {
+    const btn = e.target.closest('.tab-btn');
+    if (!btn || btn.disabled || btn.classList.contains('active')) return;
+    switchTab(btn.dataset.tab, currentSkill);
+  });
+
+  function closePanel() {
+    $overlay.classList.remove('open');
+    $panel.classList.remove('open');
+    currentSkill = null;
+  }
+
+  function openPanelWrapped(skill) {
+    currentSkill = skill;
+    openPanel(skill);
+  }
+
+  $closeBtn.addEventListener('click', closePanel);
+  $overlay.addEventListener('click', closePanel);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+
+  // ── Search ───────────────────────────────────────────────────────────────────
+  $search.addEventListener('input', e => {
+    query = e.target.value.trim();
+    render();
+  });
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+  function toArray(v) {
+    if (!v) return [];
+    return Array.isArray(v) ? v : [v];
+  }
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function renderFieldValue(field, val) {
+    switch (field.type) {
+      case 'link':
+        return `<a href="${esc(val)}" target="_blank" rel="noopener">${esc(val)}</a>`;
+      case 'array':
+        return toArray(val).map(v => `<span class="panel-tag">${esc(v)}</span>`).join(' ');
+      case 'code':
+        return `<code>${esc(val)}</code>`;
+      default:
+        return esc(String(val));
+    }
+  }
+
+  function showError(title, detail = '') {
+    $app.innerHTML = `<div class="state">
+      <div class="state-title">${title}</div>
+      ${detail ? `<div style="font-size:13px;margin-top:4px">${detail}</div>` : ''}
+    </div>`;
+  }
+
+  // ── Boot ─────────────────────────────────────────────────────────────────────
+  load();
+})();
+</script>
+</body>
+</html>
