@@ -434,6 +434,156 @@
     .md-loading { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 8px; }
     .md-error   { color: var(--muted); font-size: 13px; font-style: italic; }
 
+    /* ── Settings / token button ── */
+    .settings-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 5px 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      transition: background .1s, color .1s;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .settings-btn:hover { background: var(--surface); color: var(--fg); }
+
+    .token-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #d1d5db;
+      flex-shrink: 0;
+      transition: background .2s;
+    }
+    .token-dot.authed { background: #22c55e; }
+
+    /* ── Token modal ── */
+    .token-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      z-index: 200;
+    }
+    .token-overlay.open { display: block; }
+
+    .token-modal {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 420px;
+      max-width: calc(100vw - 32px);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.12);
+      z-index: 201;
+    }
+    .token-modal.open { display: block; }
+
+    .token-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .token-modal-title { font-weight: 600; font-size: 14px; }
+
+    .token-modal-body { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+
+    .token-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+    .token-desc a { color: var(--fg); }
+
+    .token-status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+    }
+    .token-status-row .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-green { background: #22c55e; }
+    .dot-gray  { background: #d1d5db; }
+    .token-status-label { color: var(--muted); }
+    .token-status-value { font-weight: 500; }
+    .token-status-value.masked {
+      font-family: ui-monospace, monospace;
+      font-size: 11px;
+      letter-spacing: .04em;
+    }
+
+    .token-input-wrap {
+      display: flex;
+      gap: 6px;
+    }
+    .token-input {
+      flex: 1;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: ui-monospace, monospace;
+      background: var(--surface);
+      color: var(--fg);
+      outline: none;
+    }
+    .token-input:focus { border-color: var(--fg); }
+    .token-input::placeholder { color: var(--muted); font-family: inherit; }
+
+    .token-show-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--muted);
+      white-space: nowrap;
+      transition: color .1s, border-color .1s;
+    }
+    .token-show-btn:hover { color: var(--fg); border-color: #9ca3af; }
+
+    .token-actions { display: flex; gap: 6px; }
+
+    .token-save-btn {
+      flex: 1;
+      padding: 8px 0;
+      background: var(--fg);
+      color: var(--bg);
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: opacity .1s;
+    }
+    .token-save-btn:hover { opacity: .85; }
+    .token-save-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    .token-clear-btn {
+      padding: 8px 14px;
+      background: none;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: color .1s, border-color .1s;
+    }
+    .token-clear-btn:hover { color: #ef4444; border-color: #ef4444; }
+
     /* ── Download button (overview pane) ── */
     .download-btn {
       display: inline-flex;
@@ -461,7 +611,41 @@
     <input class="search" type="search" id="search" placeholder="Search skills…" autocomplete="off">
   </div>
   <span id="header-count"></span>
+  <button class="settings-btn" id="settings-btn" title="GitHub Token">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm4.879-2.773 4.264 2.559a.25.25 0 0 1 0 .428l-4.264 2.559A.25.25 0 0 1 6 10.559V5.442a.25.25 0 0 1 .379-.215Z"/>
+    </svg>
+    <span class="token-dot" id="token-dot"></span>
+  </button>
 </header>
+
+<div class="token-overlay" id="token-overlay"></div>
+<div class="token-modal" id="token-modal">
+  <div class="token-modal-header">
+    <div class="token-modal-title">GitHub Token</div>
+    <button class="close-btn" id="token-close">✕</button>
+  </div>
+  <div class="token-modal-body">
+    <p class="token-desc">
+      Unauthenticated requests are limited to 60/hr. A
+      <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">personal access token</a>
+      raises this to 5,000/hr. Your token is stored only in this browser and never sent anywhere except GitHub's API.
+    </p>
+    <div class="token-status-row" id="token-status-row">
+      <span class="dot dot-gray" id="token-status-dot"></span>
+      <span class="token-status-label" id="token-status-label">Status</span>
+      <span class="token-status-value" id="token-status-value"></span>
+    </div>
+    <div class="token-input-wrap">
+      <input class="token-input" type="password" id="token-input" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+      <button class="token-show-btn" id="token-show-btn">Show</button>
+    </div>
+    <div class="token-actions">
+      <button class="token-save-btn" id="token-save-btn">Save</button>
+      <button class="token-clear-btn" id="token-clear-btn">Clear</button>
+    </div>
+  </div>
+</div>
 
 <div id="tags-bar" style="display:none"></div>
 
@@ -507,14 +691,23 @@
   document.title = title || 'Skills';
 
   // ── GitHub API ──────────────────────────────────────────────────────────────
-  const GH = 'https://api.github.com';
-  const headers = {
-    'Accept': 'application/vnd.github+json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-  };
+  const GH        = 'https://api.github.com';
+  const TOKEN_KEY = 'gh_skills_token';
+
+  function activeToken() {
+    return localStorage.getItem(TOKEN_KEY) || token || '';
+  }
+
+  function getHeaders() {
+    const t = activeToken();
+    return {
+      'Accept': 'application/vnd.github+json',
+      ...(t ? { 'Authorization': `Bearer ${t}` } : {}),
+    };
+  }
 
   async function ghGet(path) {
-    const r = await fetch(`${GH}${path}`, { headers });
+    const r = await fetch(`${GH}${path}`, { headers: getHeaders() });
     if (!r.ok) {
       const msg = await r.json().then(j => j.message).catch(() => r.statusText);
       throw new Error(`GitHub ${r.status}: ${msg}`);
@@ -993,6 +1186,128 @@
     query = e.target.value.trim();
     render();
   });
+
+  // ── Token modal ──────────────────────────────────────────────────────────────
+  const $tokenOverlay  = document.getElementById('token-overlay');
+  const $tokenModal    = document.getElementById('token-modal');
+  const $tokenClose    = document.getElementById('token-close');
+  const $tokenInput    = document.getElementById('token-input');
+  const $tokenShowBtn  = document.getElementById('token-show-btn');
+  const $tokenSaveBtn  = document.getElementById('token-save-btn');
+  const $tokenClearBtn = document.getElementById('token-clear-btn');
+  const $tokenDot      = document.getElementById('token-dot');
+  const $tokenStatusDot   = document.getElementById('token-status-dot');
+  const $tokenStatusLabel = document.getElementById('token-status-label');
+  const $tokenStatusValue = document.getElementById('token-status-value');
+  const $settingsBtn   = document.getElementById('settings-btn');
+
+  function updateTokenDot() {
+    const has = !!activeToken();
+    $tokenDot.classList.toggle('authed', has);
+  }
+
+  function refreshModalStatus() {
+    const stored = localStorage.getItem(TOKEN_KEY);
+    const fallback = token;
+    const active = stored || fallback || '';
+
+    if (stored) {
+      $tokenStatusDot.className   = 'dot dot-green';
+      $tokenStatusLabel.textContent = 'Token saved in browser —';
+      $tokenStatusValue.textContent = maskToken(stored);
+      $tokenStatusValue.className   = 'token-status-value masked';
+      $tokenClearBtn.style.display  = '';
+    } else if (fallback) {
+      $tokenStatusDot.className   = 'dot dot-green';
+      $tokenStatusLabel.textContent = 'Token from config.js —';
+      $tokenStatusValue.textContent = maskToken(fallback);
+      $tokenStatusValue.className   = 'token-status-value masked';
+      $tokenClearBtn.style.display  = 'none';
+    } else {
+      $tokenStatusDot.className   = 'dot dot-gray';
+      $tokenStatusLabel.textContent = 'No token set';
+      $tokenStatusValue.textContent = '60 req/hr';
+      $tokenStatusValue.className   = 'token-status-value';
+      $tokenClearBtn.style.display  = 'none';
+    }
+
+    $tokenInput.value = '';
+    updateTokenDot();
+  }
+
+  function maskToken(t) {
+    if (t.length <= 8) return '••••••••';
+    return t.slice(0, 7) + '••••' + t.slice(-4);
+  }
+
+  function openTokenModal() {
+    refreshModalStatus();
+    $tokenOverlay.classList.add('open');
+    $tokenModal.classList.add('open');
+    $tokenInput.focus();
+  }
+
+  function closeTokenModal() {
+    $tokenOverlay.classList.remove('open');
+    $tokenModal.classList.remove('open');
+  }
+
+  $settingsBtn.addEventListener('click', openTokenModal);
+  $tokenClose.addEventListener('click', closeTokenModal);
+  $tokenOverlay.addEventListener('click', closeTokenModal);
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && $tokenModal.classList.contains('open')) closeTokenModal();
+  });
+
+  $tokenShowBtn.addEventListener('click', () => {
+    const isHidden = $tokenInput.type === 'password';
+    $tokenInput.type = isHidden ? 'text' : 'password';
+    $tokenShowBtn.textContent = isHidden ? 'Hide' : 'Show';
+  });
+
+  $tokenInput.addEventListener('input', () => {
+    $tokenSaveBtn.disabled = $tokenInput.value.trim() === '';
+  });
+
+  $tokenSaveBtn.addEventListener('click', async () => {
+    const val = $tokenInput.value.trim();
+    if (!val) return;
+    $tokenSaveBtn.disabled = true;
+    $tokenSaveBtn.textContent = 'Verifying…';
+    try {
+      const r = await fetch(`${GH}/user`, {
+        headers: { 'Accept': 'application/vnd.github+json', 'Authorization': `Bearer ${val}` }
+      });
+      if (!r.ok) throw new Error('Invalid token');
+      const user = await r.json();
+      localStorage.setItem(TOKEN_KEY, val);
+      closeTokenModal();
+      updateTokenDot();
+      // Reload skills with the new token
+      allSkills = [];
+      $app.innerHTML = '<div class="state"><div class="spinner"></div><div>Reloading…</div></div>';
+      load();
+    } catch {
+      $tokenSaveBtn.textContent = 'Invalid token — try again';
+      $tokenSaveBtn.disabled = false;
+      setTimeout(() => { $tokenSaveBtn.textContent = 'Save'; $tokenSaveBtn.disabled = false; }, 2000);
+      return;
+    }
+    $tokenSaveBtn.textContent = 'Save';
+    $tokenSaveBtn.disabled = false;
+  });
+
+  $tokenClearBtn.addEventListener('click', () => {
+    localStorage.removeItem(TOKEN_KEY);
+    refreshModalStatus();
+    closeTokenModal();
+    allSkills = [];
+    $app.innerHTML = '<div class="state"><div class="spinner"></div><div>Reloading…</div></div>';
+    load();
+  });
+
+  $tokenSaveBtn.disabled = true;
+  updateTokenDot();
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
   function toArray(v) {
