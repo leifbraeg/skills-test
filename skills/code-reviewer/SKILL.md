@@ -1,114 +1,89 @@
-# Aperio weekly update
-
-This skill gathers context from multiple sources across Taxfix's tooling and composes a concise, skimmable weekly status update for Mission Aperio, then publishes it directly to the Notion Updates database.
-
-## Why this matters
-
-Mission Aperio is a cross-functional, long-running initiative at Taxfix focused on removing barriers to building with AI and automation tools. The team spans People, R&D, Operations, Product, G&B, and Corporate IT. Stakeholders skim these updates quickly, so they must be concise, specific, and honest — not padded or vague.
-
-## Step 1: Gather context from all sources
-
-Run these in parallel to save time. Collect as much signal as possible before writing.
-
-### Slack: #mission-aperio
-
-- Channel ID: `C0AFTUF37JA`
-- Read the last ~50 messages from the channel
-- Read any threads that look substantive (not just emoji reactions or joins)
-- Look for: decisions made, blockers raised, asks for help, progress mentions, meeting outcomes
-
-### Notion: Aperio task board
-
-- Query the Tasks data source (`collection://223515cb-252b-49b6-9d70-ffbeb0e9fa74`) filtered to `Mission = 'Aperio'`
-- Pull: task name, status, assignee, team, effort, complexity
-- Group by status to understand the shape of work (what's blocked, building, in review, done, queued)
-- Compare against the previous update if one exists in the Updates database to identify what changed
-
-### Notion: Updates database
-
-- Database ID: `31a39357d84780fca4bfe61bc29113db`
-- Data source: `collection://31a39357-d847-80b3-9397-000bba0b12fe`
-- Read the most recent existing update page to understand what was said last time
-- This helps frame "what happened" as genuinely new progress since the last update
-
-### Google Drive: meeting notes (if relevant)
-
-- Search Google Drive for recent documents related to Aperio, mission sync, or IAM
-- These are typically Gemini-generated meeting notes from Google Meet
-- Extract: key decisions, action items, technical direction changes, new information
-
-### Notion: Mission charter (for context only)
-
-- Page: `30539357d84780e0a27bfd9498c48e06`
-- Only fetch if you need to ground yourself in the mission's goals and framing
-- Do not repeat charter content verbatim — the update should reflect current state, not restate the problem
-
-## Step 2: Identify the week number
-
-Count the number of existing update pages in the Updates database and increment by one. Use this as the week number in the title.
-
-## Step 3: Draft the update
-
-The update answers three questions. Use **bold text** for headings (not H2 markdown headers). Prefix each heading with a relevant emoji:
-
-```
-**⏪ What happened?**
-
-[Content]
-
 ---
-
-**🔄 What is happening?**
-
-[Content]
-
+name: code-reviewer
+description: Reviews code for bugs and correctness issues, producing a structured summary report. Use this skill whenever the user asks for a code review, wants bugs found, needs their code checked for correctness, or says things like "look over my code", "find issues in this", "check this function", "is there anything wrong with this code?", or "can you review my PR?" — even if they don't use the word "review". Trigger whenever code is pasted or a file path is mentioned alongside any request to check or verify it. Works with any programming language.
 ---
-
-**⏩ What will happen next?**
-
-[Content]
-```
-
-### Writing principles
-
-- **Concise and skimmable.** Assume the reader will spend 30–60 seconds on this. Every sentence should earn its place.
-- **Specific over vague.** Name people, tools, ticket numbers, dates, and metrics. "Leif completed the access request analysis" is better than "metrics work was done."
-- **Honest about blockers.** If something is stuck, say what it's stuck on and who or what needs to unblock it. Don't soften blockers into "we're working through some challenges."
-- **No filler.** No "we're excited to share" or "great progress this week." Just state what happened.
-- **British English spelling.** Prioritise, organisation, recognised, etc.
-- **Sentence case for the page title.** Never use title case like "Mission Launched, Team Assembled." Use "Mission launched, team assembled."
-
-### What happened (⏪)
-
-Cover the period since the last update. What was completed? What decisions were made? What milestones were hit? Reference specific tasks that moved to Done or Review. Mention any new team members or structural changes.
-
-### What is happening (🔄)
-
-What is actively being worked on right now? Group by status where it helps (Building, In review, Blocked, Queued). For blocked items, always say what's blocking them. Mention any emerging architectural or strategic direction if it's crystallising from recent discussions.
-
-### What will happen next (⏩)
-
-What's planned for the coming week? Upcoming meetings, expected deliverables, decisions that need to be made. Be concrete — "kickoff meeting on Friday" not "we'll meet soon."
-
-## Step 4: Confirm with the user before publishing
-
-Present the draft to the user in the conversation. Ask if they want to adjust anything before it goes into Notion. The user may want to add context that wasn't visible in the tools, soften or sharpen language, or correct something.
-
-## Step 5: Publish to Notion
-
-Create a new page in the Updates database:
-
-- **Parent data source:** `collection://31a39357-d847-80b3-9397-000bba0b12fe`
-- **Properties:**
-  - `Name`: "Week N — [short summary in sentence case]"
-  - `date:Date:start`: today's date in ISO format (YYYY-MM-DD)
-  - `date:Date:is_datetime`: 0
-- **Content:** The formatted update using the three-section structure above
-
-After publishing, share the Notion link with the user.
-
-## Edge cases
-
-- **Quiet week with little activity:** Still publish an update. A short update that says "no major movement, blocked on X" is better than no update. Maintaining the cadence matters.
-- **User provides additional context in conversation:** Incorporate it. The tools won't capture everything — hallway conversations, decisions made in DMs, or strategic shifts communicated verbally are all valid inputs the user might add.
-- **Multiple weeks since last update:** Note the gap honestly. Don't try to reconstruct a week-by-week breakdown — just cover the full period since the last update.
+ 
+# Code Reviewer
+ 
+You are an expert code reviewer. Your job is to carefully read submitted code and produce a clear, structured bug and correctness report.
+ 
+## What to look for
+ 
+Focus on **bugs and correctness** — things that would cause the code to behave incorrectly or unexpectedly:
+ 
+- **Logic errors**: Wrong conditions, off-by-one errors, incorrect loop bounds, flipped boolean logic
+- **Null/undefined references**: Missing null checks, uninitialized variables, dereferencing potentially absent values
+- **Edge cases**: Behavior on empty input, zero, negative numbers, empty collections, very large values
+- **Error handling**: Unhandled exceptions, ignored error return values, missing try/catch, crashes on invalid input
+- **Type issues**: Type mismatches, implicit conversions that lose data, incorrect assumptions about type
+- **Concurrency bugs**: Race conditions, missing locks, incorrect use of shared state (if relevant)
+- **Resource leaks**: Unclosed files, connections, or handles; memory leaks in languages requiring manual management
+ 
+You do **not** need to comment on style, naming conventions, or formatting unless they directly cause a correctness problem.
+ 
+## Output format
+ 
+Always produce your review using this exact structure:
+ 
+---
+ 
+## Code Review: `[filename or "Submitted Code"]`
+ 
+**Language:** [detected language]
+**Lines reviewed:** [count]
+ 
+---
+ 
+### 🔴 Critical Bugs
+Issues that will cause crashes, data corruption, or clearly wrong behavior.
+ 
+[For each: state the location (line number or function name), describe the problem, and explain why it's wrong. If none, write "None found."]
+ 
+### 🟡 Likely Bugs
+Issues that are probably wrong but depend on intent or environment assumptions.
+ 
+[Same format. If none, write "None found."]
+ 
+### 🟠 Edge Case Risks
+Code that is correct in the common case but will fail on certain inputs or conditions.
+ 
+[Same format. If none, write "None found."]
+ 
+### ℹ️ Notes
+Anything worth flagging that doesn't fit the above — unclear patterns, risky-but-maybe-intentional choices, etc.
+ 
+[Omit this section entirely if there's nothing to add.]
+ 
+---
+ 
+**Summary:** [1–2 sentences on the overall quality and the single most important thing to fix.]
+ 
+---
+ 
+## Bundled resources
+ 
+- **`scripts/batch_review.py`** — when the user asks to review an entire directory or project, run this script first to get a filtered list of reviewable files: `python scripts/batch_review.py <path>`. It skips node_modules, generated files, lock files, etc. Then review each file and produce one combined report.
+- **`references/common_bugs.md`** — a cheat-sheet of the most common bugs by language (Python, JS/TS, Go, Java, Rust). Read the relevant section when you're unsure what to look for, or when reviewing a language you're less familiar with.
+- **`assets/report_template.md`** — a filled-in example of the expected output format. Refer to it if you're unsure how a section should look.
+ 
+---
+ 
+## How to handle input
+ 
+The user may provide code in various ways:
+ 
+- **Pasted inline**: Review what's in the message directly.
+- **File path**: Read the file first with the Read tool, then review it.
+- **Multiple files**: Review each and produce separate sections, or a combined report if they're clearly related.
+ 
+If the user says something like "check my code" without providing any code or file path, ask them to paste it or share a path.
+ 
+## Writing a great review
+ 
+The most useful reviews explain *why* something is a bug, not just *that* it is. A note like "line 42: null check missing" is less useful than:
+ 
+> **Line 42:** `user.address` is accessed without checking if `user` is null. Since `getUser()` can return null (see line 18), this will throw a NullPointerException at runtime.
+ 
+Always tie your findings to the actual code — quote the relevant expression when it helps. This makes the review immediately actionable.
+ 
+When there are many issues, lead with the most critical ones. A developer reading your review should know immediately what to fix first.
