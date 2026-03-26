@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Skills</title>
   <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3/dist/jszip.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -432,6 +433,24 @@
 
     .md-loading { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 8px; }
     .md-error   { color: var(--muted); font-size: 13px; font-style: italic; }
+
+    /* ── Download button (overview pane) ── */
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding: 6px 12px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      transition: border-color .1s, color .1s, background .1s;
+    }
+    .download-btn:hover { border-color: #9ca3af; color: var(--fg); background: var(--surface); }
+    .download-btn:disabled { opacity: .4; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -525,8 +544,8 @@
   const $overlay   = document.getElementById('overlay');
   const $panel     = document.getElementById('panel');
   const $pTitle    = document.getElementById('panel-title');
-  const $pTabs     = document.getElementById('panel-tabs');
-  const $closeBtn  = document.getElementById('close-btn');
+  const $pTabs    = document.getElementById('panel-tabs');
+  const $closeBtn = document.getElementById('close-btn');
 
   const panes = {
     overview:   document.getElementById('pane-overview'),
@@ -740,7 +759,14 @@
         View on GitHub
       </a>`;
     }
+    html += `<div><button class="download-btn" id="download-btn">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M7.47 10.78a.75.75 0 0 0 1.06 0l3.75-3.75a.749.749 0 1 0-1.06-1.06L8.75 8.44V1.75a.75.75 0 0 0-1.5 0v6.69L4.78 5.97a.749.749 0 1 0-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 0 0 0 1.5h8.5a.75.75 0 0 0 0-1.5h-8.5Z"/>
+      </svg>
+      Download .skill
+    </button></div>`;
     panes.overview.innerHTML = html;
+    panes.overview.querySelector('#download-btn').addEventListener('click', () => downloadSkill(skill));
 
     // Reset lazy panes so they re-fetch on next open
     panes.skill.innerHTML = '';
@@ -882,6 +908,61 @@
       ? 'style="width:12px;height:12px;margin:0"'
       : 'style="width:14px;height:14px;margin:0"';
     return `<div class="md-loading"><span class="spinner" ${s}></span> Loading…</div>`;
+  }
+
+  // ── Download as .skill (ZIP) ──────────────────────────────────────────────────
+  const DOWNLOAD_BTN_LABEL = `<svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+    <path d="M7.47 10.78a.75.75 0 0 0 1.06 0l3.75-3.75a.749.749 0 1 0-1.06-1.06L8.75 8.44V1.75a.75.75 0 0 0-1.5 0v6.69L4.78 5.97a.749.749 0 1 0-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 0 0 0 1.5h8.5a.75.75 0 0 0 0-1.5h-8.5Z"/>
+  </svg> Download .skill`;
+
+  async function downloadSkill(skill) {
+    if (!skill) return;
+    const $btn = panes.overview.querySelector('#download-btn');
+    if ($btn) { $btn.disabled = true; $btn.innerHTML = '<span class="spinner" style="width:12px;height:12px;margin:0"></span> Packing…'; }
+
+    try {
+      const zip = new JSZip();
+      await addFolderToZip(zip, `${skillsPath}/${skill._folder}`, '');
+      const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+      triggerDownload(blob, `${skill._folder}.skill`);
+    } catch (e) {
+      console.error('Download failed:', e);
+    } finally {
+      if ($btn) { $btn.disabled = false; $btn.innerHTML = DOWNLOAD_BTN_LABEL; }
+    }
+  }
+
+  async function addFolderToZip(zip, apiPath, zipPath) {
+    const items = await ghGet(`/repos/${repo}/contents/${apiPath}?ref=${branch}`);
+    await Promise.all(items.map(async item => {
+      const dest = zipPath ? `${zipPath}/${item.name}` : item.name;
+      if (item.type === 'file') {
+        const file = await ghGet(`/repos/${repo}/contents/${item.path}?ref=${branch}`);
+        if (file.encoding === 'base64') {
+          zip.file(dest, b64toBytes(file.content));
+        }
+      } else if (item.type === 'dir') {
+        await addFolderToZip(zip, item.path, dest);
+      }
+    }));
+  }
+
+  function b64toBytes(str) {
+    const raw = atob(str.replace(/\s/g, ''));
+    const bytes = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    return bytes;
+  }
+
+  function triggerDownload(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   // Wire up tab clicks — pass current skill via closure on the tab bar
