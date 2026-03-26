@@ -1,6 +1,9 @@
 {
-  "name": "Aperio Updater",
-  "description": "Not quite sure what this does",
-  "author": "me, but through the Web UI",
+  "name": "Aperio Updater 2",
+  "description": "One more time",
+  "tags": [
+    "Claude"
+  ],
+  "author": "me again",
   "version": "1.0"
 }
