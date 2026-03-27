@@ -19,7 +19,7 @@ const CONFIG = {
   token: "",
 
   // ─── UI ────────────────────────────────────────────────────────────────────
-  title: "Taxfix AI Skills Library (Demo)",
+  title: "AI Skills Library (Demo)",
 
   // ─── Metadata fields ───────────────────────────────────────────────────────
   // Defines which fields from skill.json to display and how.
