@@ -1513,7 +1513,17 @@
     loadSubFile(skill, files[0], $subContent);
   }
 
+  const IMAGE_EXTS = new Set(['png','jpg','jpeg','gif','svg','webp','avif','ico']);
+
   async function loadSubFile(skill, file, $container) {
+    const ext = file.name.split('.').pop().toLowerCase();
+
+    // Images render via raw URL — no API fetch or base64 decode needed
+    if (IMAGE_EXTS.has(ext)) {
+      renderFileContent($container, file, null);
+      return;
+    }
+
     if (!skill._fileCache) skill._fileCache = {};
     if (skill._fileCache[file.path] !== undefined) {
       renderFileContent($container, file, skill._fileCache[file.path]);
@@ -1533,11 +1543,10 @@
 
   function renderFileContent($container, file, content) {
     const ext = file.name.split('.').pop().toLowerCase();
-    const IMAGE_EXTS = ['png','jpg','jpeg','gif','svg','webp','avif'];
 
     if (ext === 'md') {
       $container.innerHTML = `<div class="md-body">${marked.parse(content)}</div>`;
-    } else if (IMAGE_EXTS.includes(ext)) {
+    } else if (IMAGE_EXTS.has(ext)) {
       const rawUrl = `https://raw.githubusercontent.com/${repo}/${branch}/${file.path}`;
       $container.innerHTML = `<img src="${esc(rawUrl)}" alt="${esc(file.name)}"
         style="max-width:100%;border-radius:6px;border:1px solid var(--border)">`;
