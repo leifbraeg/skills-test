@@ -5,20 +5,44 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Skills</title>
   <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <link id="hljs-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3/dist/jszip.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:              #ffffff;
-      --fg:              #0a0a0a;
+      --bg:              #FDF8F2;
+      --fg:              #0C0B0A;
       --muted:           #6b7280;
       --border:          #e5e7eb;
-      --surface:         #f9fafb;
-      --tag-bg:          #f3f4f6;
+      --surface:         #f3f4f0;
+      --tag-bg:          #eef0eb;
       --tag-fg:          #374151;
-      --tag-active-bg:   #0a0a0a;
-      --tag-active-fg:   #ffffff;
+      --tag-active-bg:   #154618;
+      --tag-active-fg:   #ADEE68;
+      --accent:          #ADEE68;
+      --accent-fg:       #154618;
+      --error-bg:        #fef2f2;
+      --error-border:    #fecaca;
+      --error-fg:        #dc2626;
+    }
+
+    [data-theme="dark"] {
+      --bg:              #111110;
+      --fg:              #F0EDE8;
+      --muted:           #8a8a85;
+      --border:          #2e2e2b;
+      --surface:         #1c1c1a;
+      --tag-bg:          #242421;
+      --tag-fg:          #c8c5be;
+      --tag-active-bg:   #ADEE68;
+      --tag-active-fg:   #154618;
+      --accent:          #ADEE68;
+      --accent-fg:       #154618;
+      --error-bg:        #2d1515;
+      --error-border:    #5c2020;
+      --error-fg:        #f87171;
     }
 
     body {
@@ -37,18 +61,35 @@
       background: var(--bg);
       border-bottom: 1px solid var(--border);
       padding: 10px 24px;
-      display: flex;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
       align-items: center;
       gap: 16px;
     }
 
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
     .logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
       font-weight: 600;
       font-size: 15px;
       white-space: nowrap;
     }
 
-    .search-wrap { flex: 1; max-width: 380px; }
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .search-wrap { width: 340px; }
 
     .search {
       width: 100%;
@@ -113,7 +154,7 @@
 
     /* ── Skill card ── */
     .card {
-      border: 1px solid var(--border);
+      border: 1px solid var(--tag-active-bg);
       border-radius: 8px;
       padding: 14px 16px;
       cursor: pointer;
@@ -123,7 +164,7 @@
       gap: 6px;
     }
     .card:hover {
-      border-color: #9ca3af;
+      border-color: var(--tag-active-bg);
       box-shadow: 0 1px 6px rgba(0,0,0,.06);
     }
 
@@ -144,10 +185,21 @@
 
     .card-meta {
       display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-top: 2px;
+    }
+
+    .card-tag-row {
+      display: flex;
       flex-wrap: wrap;
       gap: 4px;
-      align-items: center;
-      margin-top: 2px;
+    }
+
+    .card-field-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
 
     .card-tag {
@@ -332,7 +384,7 @@
       transition: color .1s, border-color .1s;
     }
     .tab-btn:hover { color: var(--fg); }
-    .tab-btn.active { color: var(--fg); border-bottom-color: var(--fg); }
+    .tab-btn.active { color: var(--fg); border-bottom-color: #ADEE68; }
     .tab-btn:disabled { opacity: .35; cursor: not-allowed; }
 
     /* ── Tab panes ── */
@@ -375,7 +427,7 @@
     .sub-tab-btn:hover { color: var(--fg); }
     .sub-tab-btn.active {
       color: var(--fg);
-      border-bottom-color: var(--fg);
+      border-bottom-color: #ADEE68;
       background: var(--bg);
     }
 
@@ -434,6 +486,43 @@
     .md-loading { color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 8px; }
     .md-error   { color: var(--muted); font-size: 13px; font-style: italic; }
 
+    /* ── YAML frontmatter block ── */
+    .fm-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      font-size: 12px;
+    }
+    .fm-table tr { border-bottom: 1px solid var(--border); }
+    .fm-table tr:last-child { border-bottom: none; }
+    .fm-table td { padding: 7px 12px; vertical-align: top; line-height: 1.5; }
+    .fm-key {
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      color: var(--muted);
+      white-space: nowrap;
+      width: 1%;
+      padding-right: 16px;
+    }
+    .fm-val { color: var(--fg); }
+
+    /* ── Syntax-highlighted code blocks ── */
+    .code-block {
+      margin: 0;
+      padding: 14px 16px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      overflow-x: auto;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    .code-block .hljs { background: transparent; padding: 0; }
+    /* Override hljs github theme background to match our surface */
+    pre.hljs, .hljs { background: var(--surface) !important; }
+
     /* ── Settings / token button ── */
     .settings-btn {
       background: none;
@@ -455,11 +544,11 @@
     .token-dot {
       width: 6px; height: 6px;
       border-radius: 50%;
-      background: #d1d5db;
+      background: var(--border);
       flex-shrink: 0;
       transition: background .2s;
     }
-    .token-dot.authed { background: #22c55e; }
+    .token-dot.authed { background: var(--accent); }
 
     /* ── Token modal ── */
     .token-overlay {
@@ -515,8 +604,8 @@
       border-radius: 50%;
       flex-shrink: 0;
     }
-    .dot-green { background: #22c55e; }
-    .dot-gray  { background: #d1d5db; }
+    .dot-green { background: var(--accent); }
+    .dot-gray  { background: var(--border); }
     .token-status-label { color: var(--muted); }
     .token-status-value { font-weight: 500; }
     .token-status-value.masked {
@@ -554,15 +643,15 @@
       white-space: nowrap;
       transition: color .1s, border-color .1s;
     }
-    .token-show-btn:hover { color: var(--fg); border-color: #9ca3af; }
+    .token-show-btn:hover { color: var(--fg); border-color: var(--accent); }
 
     .token-actions { display: flex; gap: 6px; }
 
     .token-save-btn {
       flex: 1;
       padding: 8px 0;
-      background: var(--fg);
-      color: var(--bg);
+      background: var(--accent);
+      color: var(--accent-fg);
       border: none;
       border-radius: 6px;
       font-size: 13px;
@@ -584,10 +673,25 @@
     }
     .token-clear-btn:hover { color: #ef4444; border-color: #ef4444; }
 
+    /* ── Dark mode toggle ── */
+    .theme-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 5px 6px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      transition: background .1s, color .1s;
+    }
+    .theme-btn:hover { background: var(--surface); color: var(--fg); }
+
     /* ── Upload button (header) ── */
     .upload-btn {
-      background: var(--fg);
-      color: var(--bg);
+      background: var(--accent);
+      color: var(--accent-fg);
       border: none;
       border-radius: 6px;
       padding: 5px 11px;
@@ -753,13 +857,13 @@
       cursor: pointer;
       transition: color .1s, border-color .1s;
     }
-    .form-cancel-btn:hover { color: var(--fg); border-color: #9ca3af; }
+    .form-cancel-btn:hover { color: var(--fg); border-color: var(--accent); }
 
     .form-submit-btn {
       flex: 1;
       padding: 8px 0;
-      background: var(--fg);
-      color: var(--bg);
+      background: var(--accent);
+      color: var(--accent-fg);
       border: none;
       border-radius: 6px;
       font-size: 13px;
@@ -801,9 +905,9 @@
     }
     .upload-step.active { color: var(--fg); }
     .upload-step.done .upload-step-icon {
-      background: var(--fg);
-      border-color: var(--fg);
-      color: var(--bg);
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--accent-fg);
     }
     .upload-step.done { color: var(--muted); }
 
@@ -819,8 +923,8 @@
     .pr-success-icon {
       width: 40px; height: 40px;
       border-radius: 50%;
-      background: #f0fdf4;
-      border: 1px solid #86efac;
+      background: var(--surface);
+      border: 1px solid var(--accent);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -833,8 +937,8 @@
       align-items: center;
       gap: 6px;
       padding: 8px 16px;
-      background: var(--fg);
-      color: var(--bg);
+      background: var(--accent);
+      color: var(--accent-fg);
       border: none;
       border-radius: 6px;
       font-size: 13px;
@@ -858,11 +962,11 @@
 
     .upload-error-msg {
       padding: 10px 12px;
-      background: #fef2f2;
-      border: 1px solid #fecaca;
+      background: var(--error-bg);
+      border: 1px solid var(--error-border);
       border-radius: 6px;
       font-size: 12px;
-      color: #dc2626;
+      color: var(--error-fg);
     }
 
     /* ── Download button (overview pane) ── */
@@ -880,31 +984,41 @@
       cursor: pointer;
       transition: border-color .1s, color .1s, background .1s;
     }
-    .download-btn:hover { border-color: #9ca3af; color: var(--fg); background: var(--surface); }
+    .download-btn:hover { border-color: var(--accent); color: var(--fg); background: var(--surface); }
     .download-btn:disabled { opacity: .4; cursor: not-allowed; }
   </style>
 </head>
 <body>
 
 <header>
-  <div class="logo" id="app-title">Skills</div>
+  <div class="logo">
+    <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 803 803"><g filter="url(#logo-a)"><path fill="#ADEE68" fill-rule="evenodd" d="M799 547.437c0 9.451 0 18.902-.055 28.367-.042 7.958-.139 15.916-.361 23.874-.471 17.327-1.51 34.832-4.627 51.967-3.159 17.409-8.314 33.613-16.474 49.433a166.1 166.1 0 0 1-30.912 42.078 168 168 0 0 1-42.578 30.572c-15.989 8.054-32.366 13.163-49.977 16.286-17.347 3.082-35.04 4.109-52.581 4.575-33.724.411-43.284.411-52.845.411H254.424c-36.745-.11-44.795-.192-52.845-.411-17.541-.466-35.235-1.493-52.582-4.575-17.61-3.123-33.987-8.232-49.976-16.286a167.7 167.7 0 0 1-42.578-30.572 166.5 166.5 0 0 1-30.925-42.078c-8.148-15.82-13.302-32.024-16.475-49.433-3.117-17.135-4.142-34.64-4.613-51.967-.222-7.958-.32-15.916-.36-23.874C4 566.339 4 556.888 4 547.437V247.563c0-9.451 0-18.916.07-28.353.04-7.972.138-15.93.36-23.888.47-17.341 1.496-34.832 4.613-51.981 3.173-17.409 8.328-33.599 16.475-49.42a166 166 0 0 1 30.925-42.077A167.4 167.4 0 0 1 99.02 21.272c15.989-8.054 32.366-13.163 49.976-16.286C166.344 1.904 184.038.876 201.579.41 235.303 0 244.863 0 254.424 0h286.324l-101.99.041L548.59 0c36.731.11 44.781.192 52.845.41 17.541.467 35.234 1.494 52.581 4.576 17.611 3.123 33.988 8.232 49.977 16.286a167.7 167.7 0 0 1 42.578 30.572 165.7 165.7 0 0 1 30.912 42.078c8.16 15.82 13.315 32.01 16.474 49.419 3.117 17.149 4.156 34.64 4.627 51.981.222 7.958.319 15.916.361 23.888.055 9.437.055 18.902.055 28.353z" clip-rule="evenodd"/><path fill="#154618" d="M684.651 518.507c0 59.002-49.338 108.34-108.34 108.34-59.001 0-107.427-49.338-107.427-108.34s48.426-108.34 107.427-108.34 108.34 49.338 108.34 108.34m-355.836 95.992h-185.81c-5.315 0-7.946-3.543-4.402-8.805l319.705-427.132c1.771-2.631 5.261-4.403 8.804-4.403h185.81c5.262 0 7.946 3.544 4.403 8.805L337.62 610.096c-1.772 2.631-5.262 4.403-8.805 4.403m-1.772-344.347c0 59.001-48.425 108.34-107.427 108.34s-108.34-49.339-108.34-108.34 49.338-108.34 108.34-108.34 107.427 49.338 107.427 108.34"/></g><defs><filter id="logo-a" width="803" height="803" x="0" y="0" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" result="hardAlpha" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"/><feOffset dy="4"/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/><feBlend in2="BackgroundImageFix" result="effect1_dropShadow_8312_542"/><feBlend in="SourceGraphic" in2="effect1_dropShadow_8312_542" result="shape"/></filter></defs></svg>
+    <span id="app-title">Taxfix AI Skills Library (Demo)</span>
+  </div>
   <div class="search-wrap">
     <input class="search" type="search" id="search" placeholder="Search skills…" autocomplete="off">
   </div>
-  <span id="header-count"></span>
-  <button class="upload-btn" id="upload-btn">
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M8.75 1.75a.75.75 0 0 0-1.5 0V8H3.56l.97-.97a.749.749 0 1 0-1.06-1.06l-2.25 2.25a.749.749 0 0 0 0 1.06l2.25 2.25a.749.749 0 1 0 1.06-1.06L3.56 9.5H7.25v4.75a.75.75 0 0 0 1.5 0V9.5h3.69l-.97.97a.749.749 0 1 0 1.06 1.06l2.25-2.25a.749.749 0 0 0 0-1.06L12.53 5.97a.749.749 0 1 0-1.06 1.06l.97.97H8.75V1.75Z"/>
-    </svg>
-    Upload skill
-  </button>
-  <input type="file" id="file-input" accept=".skill" style="display:none">
-  <button class="settings-btn" id="settings-btn" title="GitHub Token">
-    <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-      <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm4.879-2.773 4.264 2.559a.25.25 0 0 1 0 .428l-4.264 2.559A.25.25 0 0 1 6 10.559V5.442a.25.25 0 0 1 .379-.215Z"/>
-    </svg>
-    <span class="token-dot" id="token-dot"></span>
-  </button>
+  <div class="header-right">
+    <span id="header-count"></span>
+    <button class="upload-btn" id="upload-btn">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M8.75 1.75a.75.75 0 0 0-1.5 0V8H3.56l.97-.97a.749.749 0 1 0-1.06-1.06l-2.25 2.25a.749.749 0 0 0 0 1.06l2.25 2.25a.749.749 0 1 0 1.06-1.06L3.56 9.5H7.25v4.75a.75.75 0 0 0 1.5 0V9.5h3.69l-.97.97a.749.749 0 1 0 1.06 1.06l2.25-2.25a.749.749 0 0 0 0-1.06L12.53 5.97a.749.749 0 1 0-1.06 1.06l.97.97H8.75V1.75Z"/>
+      </svg>
+      Upload skill
+    </button>
+    <input type="file" id="file-input" accept=".skill" style="display:none">
+    <button class="settings-btn" id="settings-btn" title="GitHub Token">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm4.879-2.773 4.264 2.559a.25.25 0 0 1 0 .428l-4.264 2.559A.25.25 0 0 1 6 10.559V5.442a.25.25 0 0 1 .379-.215Z"/>
+      </svg>
+      <span class="token-dot" id="token-dot"></span>
+    </button>
+    <button class="theme-btn" id="theme-btn" title="Toggle dark mode">
+      <svg id="theme-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </div>
 </header>
 
 <div class="upload-overlay" id="upload-overlay"></div>
@@ -984,8 +1098,8 @@
   const cfg = CONFIG;
   const { repo, branch, skillsPath, skillFile, token, title, metadataFields, predefinedTags } = cfg;
 
-  document.getElementById('app-title').textContent = title || 'Skills';
-  document.title = title || 'Skills';
+  document.getElementById('app-title').textContent = title || 'Taxfix AI Skills Library (Demo)';
+  document.title = title || 'Taxfix AI Skills Library (Demo)';
 
   // ── GitHub API ──────────────────────────────────────────────────────────────
   const GH        = 'https://api.github.com';
@@ -1188,21 +1302,30 @@
       const meta = document.createElement('div');
       meta.className = 'card-meta';
 
-      tags.forEach(t => {
-        const span = document.createElement('span');
-        span.className = 'card-tag';
-        span.textContent = t;
-        meta.appendChild(span);
-      });
+      if (tags.length) {
+        const tagRow = document.createElement('div');
+        tagRow.className = 'card-tag-row';
+        tags.forEach(t => {
+          const span = document.createElement('span');
+          span.className = 'card-tag';
+          span.textContent = t;
+          tagRow.appendChild(span);
+        });
+        meta.appendChild(tagRow);
+      }
 
-      cardFields.forEach(f => {
-        const val = skill[f.key];
-        if (!val) return;
-        const span = document.createElement('span');
-        span.className = 'card-field';
-        span.textContent = `${f.label}: ${val}`;
-        meta.appendChild(span);
-      });
+      const fieldValues = cardFields.filter(f => skill[f.key]);
+      if (fieldValues.length) {
+        const fieldRow = document.createElement('div');
+        fieldRow.className = 'card-field-row';
+        fieldValues.forEach(f => {
+          const span = document.createElement('span');
+          span.className = 'card-field';
+          span.textContent = `${f.label}: ${skill[f.key]}`;
+          fieldRow.appendChild(span);
+        });
+        meta.appendChild(fieldRow);
+      }
 
       card.appendChild(meta);
     }
@@ -1285,6 +1408,21 @@
   }
 
   // ── SKILL.md ─────────────────────────────────────────────────────────────────
+  function parseFrontmatter(raw) {
+    const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+    if (!match) return { fields: null, body: raw };
+
+    const fields = {};
+    for (const line of match[1].split('\n')) {
+      const colon = line.indexOf(':');
+      if (colon === -1) continue;
+      const key = line.slice(0, colon).trim();
+      const val = line.slice(colon + 1).trim();
+      if (key) fields[key] = val;
+    }
+    return { fields, body: match[2].trim() };
+  }
+
   async function loadSkillMd(skill) {
     if (panes.skill.innerHTML !== '') return;
     panes.skill.innerHTML = loadingHTML();
@@ -1292,7 +1430,22 @@
       const file = await ghGet(
         `/repos/${repo}/contents/${skillsPath}/${skill._folder}/SKILL.md?ref=${branch}`
       );
-      panes.skill.innerHTML = `<div class="md-body">${marked.parse(b64decode(file.content))}</div>`;
+      const { fields, body } = parseFrontmatter(b64decode(file.content));
+
+      let html = '';
+
+      if (fields && Object.keys(fields).length) {
+        const rows = Object.entries(fields).map(([k, v]) => `
+          <tr>
+            <td class="fm-key">${esc(k)}</td>
+            <td class="fm-val">${esc(v)}</td>
+          </tr>`).join('');
+        html += `<table class="fm-table"><tbody>${rows}</tbody></table>`;
+      }
+
+      if (body) html += `<div class="md-body">${marked.parse(body)}</div>`;
+
+      panes.skill.innerHTML = html || '<div class="md-error">Empty file.</div>';
     } catch (e) {
       panes.skill.innerHTML = `<div class="md-error">${
         e.message.includes('404') ? 'No <code>SKILL.md</code> found in this skill\'s folder.' : esc(e.message)
@@ -1389,7 +1542,9 @@
       $container.innerHTML = `<img src="${esc(rawUrl)}" alt="${esc(file.name)}"
         style="max-width:100%;border-radius:6px;border:1px solid var(--border)">`;
     } else {
-      $container.innerHTML = `<pre style="margin:0"><code>${esc(content)}</code></pre>`;
+      const lang = hljs.getLanguage(ext) ? ext : 'plaintext';
+      const highlighted = hljs.highlight(content, { language: lang }).value;
+      $container.innerHTML = `<pre class="code-block"><code class="hljs">${highlighted}</code></pre>`;
     }
   }
 
@@ -1891,6 +2046,47 @@
       ${detail ? `<div style="font-size:13px;margin-top:4px">${detail}</div>` : ''}
     </div>`;
   }
+
+  // ── Configure marked to use highlight.js for code blocks ─────────────────────
+  marked.use({
+    renderer: {
+      code({ text, lang, raw }) {
+        const code = text ?? raw ?? '';
+        const language = lang && hljs.getLanguage(lang) ? lang : 'plaintext';
+        const highlighted = hljs.highlight(code, { language }).value;
+        return `<pre class="code-block"><code class="hljs">${highlighted}</code></pre>`;
+      }
+    }
+  });
+
+  // ── Dark mode ────────────────────────────────────────────────────────────────
+  const $themeBtn  = document.getElementById('theme-btn');
+  const $themeIcon = document.getElementById('theme-icon');
+  const $hljsTheme = document.getElementById('hljs-theme');
+
+  const HLJS_LIGHT = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+  const HLJS_DARK  = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
+
+  const MOON_ICON = `<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>`;
+  const SUN_ICON  = `<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>`;
+
+  function applyTheme(dark) {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    $hljsTheme.href = dark ? HLJS_DARK : HLJS_LIGHT;
+    $themeIcon.innerHTML = dark ? SUN_ICON : MOON_ICON;
+    $themeBtn.title = dark ? 'Switch to light mode' : 'Switch to dark mode';
+  }
+
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const savedTheme  = localStorage.getItem('theme');
+  let isDark = savedTheme ? savedTheme === 'dark' : prefersDark;
+  applyTheme(isDark);
+
+  $themeBtn.addEventListener('click', () => {
+    isDark = !isDark;
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    applyTheme(isDark);
+  });
 
   // ── Boot ─────────────────────────────────────────────────────────────────────
   load();
