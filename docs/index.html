@@ -992,8 +992,12 @@
 
 <header>
   <div class="logo">
-    <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 803 803"><g filter="url(#logo-a)"><path fill="#ADEE68" fill-rule="evenodd" d="M799 547.437c0 9.451 0 18.902-.055 28.367-.042 7.958-.139 15.916-.361 23.874-.471 17.327-1.51 34.832-4.627 51.967-3.159 17.409-8.314 33.613-16.474 49.433a166.1 166.1 0 0 1-30.912 42.078 168 168 0 0 1-42.578 30.572c-15.989 8.054-32.366 13.163-49.977 16.286-17.347 3.082-35.04 4.109-52.581 4.575-33.724.411-43.284.411-52.845.411H254.424c-36.745-.11-44.795-.192-52.845-.411-17.541-.466-35.235-1.493-52.582-4.575-17.61-3.123-33.987-8.232-49.976-16.286a167.7 167.7 0 0 1-42.578-30.572 166.5 166.5 0 0 1-30.925-42.078c-8.148-15.82-13.302-32.024-16.475-49.433-3.117-17.135-4.142-34.64-4.613-51.967-.222-7.958-.32-15.916-.36-23.874C4 566.339 4 556.888 4 547.437V247.563c0-9.451 0-18.916.07-28.353.04-7.972.138-15.93.36-23.888.47-17.341 1.496-34.832 4.613-51.981 3.173-17.409 8.328-33.599 16.475-49.42a166 166 0 0 1 30.925-42.077A167.4 167.4 0 0 1 99.02 21.272c15.989-8.054 32.366-13.163 49.976-16.286C166.344 1.904 184.038.876 201.579.41 235.303 0 244.863 0 254.424 0h286.324l-101.99.041L548.59 0c36.731.11 44.781.192 52.845.41 17.541.467 35.234 1.494 52.581 4.576 17.611 3.123 33.988 8.232 49.977 16.286a167.7 167.7 0 0 1 42.578 30.572 165.7 165.7 0 0 1 30.912 42.078c8.16 15.82 13.315 32.01 16.474 49.419 3.117 17.149 4.156 34.64 4.627 51.981.222 7.958.319 15.916.361 23.888.055 9.437.055 18.902.055 28.353z" clip-rule="evenodd"/><path fill="#154618" d="M684.651 518.507c0 59.002-49.338 108.34-108.34 108.34-59.001 0-107.427-49.338-107.427-108.34s48.426-108.34 107.427-108.34 108.34 49.338 108.34 108.34m-355.836 95.992h-185.81c-5.315 0-7.946-3.543-4.402-8.805l319.705-427.132c1.771-2.631 5.261-4.403 8.804-4.403h185.81c5.262 0 7.946 3.544 4.403 8.805L337.62 610.096c-1.772 2.631-5.262 4.403-8.805 4.403m-1.772-344.347c0 59.001-48.425 108.34-107.427 108.34s-108.34-49.339-108.34-108.34 49.338-108.34 108.34-108.34 107.427 49.338 107.427 108.34"/></g><defs><filter id="logo-a" width="803" height="803" x="0" y="0" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse"><feFlood flood-opacity="0" result="BackgroundImageFix"/><feColorMatrix in="SourceAlpha" result="hardAlpha" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"/><feOffset dy="4"/><feGaussianBlur stdDeviation="2"/><feComposite in2="hardAlpha" operator="out"/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/><feBlend in2="BackgroundImageFix" result="effect1_dropShadow_8312_542"/><feBlend in="SourceGraphic" in2="effect1_dropShadow_8312_542" result="shape"/></filter></defs></svg>
-    <span id="app-title">Taxfix AI Skills Library (Demo)</span>
+    <svg class="logo-icon" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="28" height="28" rx="7" fill="var(--fg)"/>
+      <path d="M8 20 L14 8 L20 20" stroke="var(--bg)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <line x1="10" y1="16" x2="18" y2="16" stroke="var(--bg)" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+    <span id="app-title">AI Skills Library</span>
   </div>
   <div class="search-wrap">
     <input class="search" type="search" id="search" placeholder="Search skills…" autocomplete="off">
@@ -1098,8 +1102,8 @@
   const cfg = CONFIG;
   const { repo, branch, skillsPath, skillFile, token, title, metadataFields, predefinedTags } = cfg;
 
-  document.getElementById('app-title').textContent = title || 'Taxfix AI Skills Library (Demo)';
-  document.title = title || 'Taxfix AI Skills Library (Demo)';
+  document.getElementById('app-title').textContent = title || 'AI Skills Library';
+  document.title = title || 'AI Skills Library';
 
   // ── GitHub API ──────────────────────────────────────────────────────────────
   const GH        = 'https://api.github.com';
