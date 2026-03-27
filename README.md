@@ -166,20 +166,6 @@ Put `index.html` and `config.js` in a `docs/` folder in your repository. Go to *
 
 No build step. No GitHub Actions required.
 
-### 4. Custom fonts (optional)
-
-The catalogue is designed for the ABC Rom typeface. To use it, place your licensed `.woff2` files in a `fonts/` folder next to `index.html`:
-
-```
-fonts/
-  ABCRom-Regular.woff2
-  ABCRom-Book.woff2
-  ABCRom-Medium.woff2
-  ABCRom-Bold.woff2
-```
-
-Falls back to system fonts if the files aren't present.
-
 ---
 
 ## Rate limits
