@@ -1412,7 +1412,7 @@
     if (rows) html += `<table class="meta-table"><tbody>${rows}</tbody></table>`;
 
     // Add placeholder for security scan results that will be fetched in background
-    html += `<div id="security-scan-section" style="display:none; margin-top: 12px; padding: 10px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border);"></div>`;
+    html += `<div id="security-scan-section" style="display:none; margin-top: 18px;"></div>`;
 
     // Add placeholder for last edited/added dates that will be fetched in background
     html += `<table class="meta-table"><tbody id="date-rows"></tbody></table>`;
@@ -1519,13 +1519,16 @@
             }
 
             scanSection.innerHTML = `
-              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                <div style="font-weight: 500; color: ${statusColor};">${statusText}</div>
-                <div style="font-size: 12px; color: var(--muted);">${malicious + suspicious}/${total} vendors flagged</div>
+              <div style="padding: 12px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border);">
+                <div style="font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 10px;">Security Scan</div>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                  <div style="font-weight: 500; color: ${statusColor};">${statusText}</div>
+                  <div style="font-size: 12px; color: var(--muted);">${malicious + suspicious}/${total} vendors flagged</div>
+                </div>
+                <a href="${esc(skill.virustotalReportUrl)}" target="_blank" rel="noopener" style="font-size: 12px; color: var(--accent); text-decoration: none;">
+                  View full report on VirusTotal →
+                </a>
               </div>
-              <a href="${esc(skill.virustotalReportUrl)}" target="_blank" rel="noopener" style="font-size: 12px; color: var(--accent); text-decoration: none;">
-                View full report on VirusTotal →
-              </a>
             `;
             scanSection.style.display = 'block';
           }
