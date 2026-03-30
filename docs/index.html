@@ -1377,8 +1377,19 @@
       }
       const lastEdited = response[0].commit.author.date;
       const added = response[response.length - 1].commit.author.date;
-      const lastCommitAuthor = response[0].author; // GitHub user object with login, name, etc.
-      return { lastEdited, added, author: lastCommitAuthor };
+
+      // Find the original human author (skip bot accounts)
+      let originalAuthor = null;
+      for (let i = response.length - 1; i >= 0; i--) {
+        const author = response[i].author;
+        // Skip bot accounts (GitHub Actions, Dependabot, etc.)
+        if (author && !author.login?.includes('[bot]') && author.type !== 'Bot') {
+          originalAuthor = author;
+          break;
+        }
+      }
+
+      return { lastEdited, added, author: originalAuthor };
     } catch (err) {
       console.warn('Failed to fetch commit dates:', err);
       return { lastEdited: null, added: null, author: null };
@@ -1411,11 +1422,11 @@
 
     if (rows) html += `<table class="meta-table"><tbody>${rows}</tbody></table>`;
 
-    // Add placeholder for security scan results that will be fetched in background
-    html += `<div id="security-scan-section" style="display:none; margin-top: 18px;"></div>`;
-
     // Add placeholder for last edited/added dates that will be fetched in background
     html += `<table class="meta-table"><tbody id="date-rows"></tbody></table>`;
+
+    // Add placeholder for security scan results that will be fetched in background
+    html += `<div id="security-scan-section" style="display:none; margin-top: 18px;"></div>`;
     if (skill._githubUrl) {
       html += `<a class="github-link" href="${esc(skill._githubUrl)}" target="_blank" rel="noopener">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -1490,59 +1501,38 @@
       dateRowsTable.parentElement.remove();
     }
 
-    // Fetch and display VirusTotal scan results
+    // Display VirusTotal scan results
     const scanSection = panes.overview.querySelector('#security-scan-section');
-    if (skill.virustotalReportUrl) {
+    if (skill.virustotalReportUrl && skill.virustotalStats) {
+      const stats = skill.virustotalStats;
+      const malicious = stats.malicious || 0;
+      const suspicious = stats.suspicious || 0;
+      const undetected = stats.undetected || 0;
+      const timeout = stats.timeout || 0;
+      const total = malicious + suspicious + undetected + timeout;
+      const findings = malicious;
+
+      let statusColor = '#22c55e'; // green
+      let statusText = '✓ Clean';
+      if (findings > 0) {
+        statusColor = '#ef4444'; // red
+        statusText = `⚠️ ${findings} finding${findings !== 1 ? 's' : ''}`;
+      } else if (suspicious > 0) {
+        statusColor = '#f59e0b'; // amber
+        statusText = `⚠️ ${suspicious} suspicious`;
+      }
+
       let scanHtml = `
         <div style="padding: 12px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border);">
           <div style="font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 10px;">Security Scan</div>
-      `;
-
-      try {
-        const reportMatch = skill.virustotalReportUrl.match(/\/file\/([a-f0-9]+)/);
-        if (reportMatch) {
-          const fileHash = reportMatch[1];
-          try {
-            const vtResponse = await fetchUrl(`https://www.virustotal.com/api/v3/files/${fileHash}`);
-
-            if (vtResponse && vtResponse.data && vtResponse.data.attributes) {
-              const attrs = vtResponse.data.attributes;
-              const stats = attrs.last_analysis_stats || {};
-              const malicious = stats.malicious || 0;
-              const suspicious = stats.suspicious || 0;
-              const total = Object.values(stats).reduce((a, b) => a + b, 0);
-
-              let statusColor = '#22c55e'; // green
-              let statusText = '✓ Clean';
-              if (malicious > 0) {
-                statusColor = '#ef4444'; // red
-                statusText = `⚠️ ${malicious} detection${malicious !== 1 ? 's' : ''}`;
-              } else if (suspicious > 0) {
-                statusColor = '#f59e0b'; // amber
-                statusText = `⚠️ ${suspicious} suspicious`;
-              }
-
-              scanHtml += `
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                  <div style="font-weight: 500; color: ${statusColor};">${statusText}</div>
-                  <div style="font-size: 12px; color: var(--muted);">${malicious + suspicious}/${total} vendors flagged</div>
-                </div>
-              `;
-            }
-          } catch (apiErr) {
-            console.warn('Could not fetch detailed VirusTotal stats:', apiErr);
-            scanHtml += `<div style="font-size: 12px; color: var(--muted); margin-bottom: 10px;">Scan completed</div>`;
-          }
-        }
-      } catch (err) {
-        console.warn('VirusTotal error:', err);
-      }
-
-      scanHtml += `
-        <a href="${esc(skill.virustotalReportUrl)}" target="_blank" rel="noopener" style="font-size: 12px; color: var(--accent); text-decoration: none;">
-          View full report on VirusTotal →
-        </a>
-      </div>
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+            <div style="font-weight: 500; color: ${statusColor};">${statusText}</div>
+            <div style="font-size: 12px; color: var(--muted);">${findings}/${total} vendors</div>
+          </div>
+          <a href="${esc(skill.virustotalReportUrl)}" target="_blank" rel="noopener" style="font-size: 12px; color: var(--accent); text-decoration: none;">
+            View full report on VirusTotal →
+          </a>
+        </div>
       `;
 
       scanSection.innerHTML = scanHtml;

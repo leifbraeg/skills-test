@@ -69,9 +69,25 @@ jobs:
             fi
 
             # Wait for analysis to complete and get SHA-256 hash
-            sleep 2
-            ANALYSIS=$(curl -s -H "x-apikey: $VT_API_KEY" \
-              "https://www.virustotal.com/api/v3/analyses/$FILE_ID")
+            ANALYSIS=""
+            MAX_RETRIES=30
+            RETRY_COUNT=0
+
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+              sleep 30
+              ANALYSIS=$(curl -s -H "x-apikey: $VT_API_KEY" \
+                "https://www.virustotal.com/api/v3/analyses/$FILE_ID")
+
+              STATUS=$(echo "$ANALYSIS" | jq -r '.data.attributes.status // empty')
+              if [ "$STATUS" = "completed" ]; then
+                break
+              fi
+
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "⏳ Waiting for analysis to complete... (attempt $((RETRY_COUNT + 1))/$MAX_RETRIES)"
+              fi
+            done
 
             FILE_HASH=$(echo "$ANALYSIS" | jq -r '.meta.file_info.sha256 // empty')
             if [ -z "$FILE_HASH" ]; then
@@ -81,13 +97,21 @@ jobs:
 
             REPORT_URL="https://www.virustotal.com/gui/file/$FILE_HASH/details"
 
-            echo "✅ Scanned $skill: $REPORT_URL"
+            # Extract scan statistics from the completed analysis
+            STATS=$(echo "$ANALYSIS" | jq -r '.data.attributes.stats // empty')
+            MALICIOUS=$(echo "$STATS" | jq -r '.malicious // 0')
+            SUSPICIOUS=$(echo "$STATS" | jq -r '.suspicious // 0')
+            UNDETECTED=$(echo "$STATS" | jq -r '.undetected // 0')
+            TIMEOUT=$(echo "$STATS" | jq -r '.timeout // 0')
 
-            # Update skill.json with report URL
+            echo "✅ Scanned $skill: $REPORT_URL"
+            echo "   Results: $MALICIOUS malicious, $SUSPICIOUS suspicious, $UNDETECTED undetected, $TIMEOUT timeout"
+
+            # Update skill.json with report URL and stats
             SKILL_JSON="$SKILL_PATH/skill.json"
             if [ -f "$SKILL_JSON" ]; then
-              # Use jq to update the JSON, creating the field if it doesn't exist
-              jq ".virustotalReportUrl = \"$REPORT_URL\" | .virustotalScanDate = \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\"" "$SKILL_JSON" > "${SKILL_JSON}.tmp"
+              # Use jq to update the JSON with report URL, scan date, and stats
+              jq ".virustotalReportUrl = \"$REPORT_URL\" | .virustotalScanDate = \"$(date -u +'%Y-%m-%dT%H:%M:%SZ')\" | .virustotalStats = {malicious: $MALICIOUS, suspicious: $SUSPICIOUS, undetected: $UNDETECTED, timeout: $TIMEOUT}" "$SKILL_JSON" > "${SKILL_JSON}.tmp"
               mv "${SKILL_JSON}.tmp" "$SKILL_JSON"
             fi
 
