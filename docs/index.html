@@ -1522,12 +1522,13 @@
         statusText = `⚠️ ${suspicious} suspicious`;
       }
 
+      const vendorText = findings === 0 ? `Passed by all ${total} vendors` : `${findings} finding${findings !== 1 ? 's' : ''} among ${total} vendors`;
       let scanHtml = `
         <div style="padding: 12px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border);">
           <div style="font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 10px;">Security Scan</div>
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
             <div style="font-weight: 500; color: ${statusColor};">${statusText}</div>
-            <div style="font-size: 12px; color: var(--muted);">${findings}/${total} vendors</div>
+            <div style="font-size: 12px; color: var(--muted);">${vendorText}</div>
           </div>
           <a href="${esc(skill.virustotalReportUrl)}" target="_blank" rel="noopener" style="font-size: 12px; color: var(--accent); text-decoration: none;">
             View full report on VirusTotal →

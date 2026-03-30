@@ -48,7 +48,7 @@ When a skill is pushed to the repository, GitHub Actions automatically:
 
 The scan results are displayed in the skill detail view showing:
 - Security status (clean, suspicious, or findings detected)
-- Number of findings out of total vendors scanned (e.g., "0/63 vendors")
+- Vendor scan summary (e.g., "Passed by all 63 vendors" for clean scans, or "2 findings among 63 vendors" for issues)
 - Link to the full VirusTotal report
 
 **Setup:** Add a `VIRUSTOTAL_API_KEY` secret to your GitHub repository for automatic scanning.
