@@ -1,0 +1,9 @@
+{
+  "name": "Daily Scheduler",
+  "description": "Builds a realistic, prioritized schedule for your day.",
+  "tags": [
+    "Claude",
+    "Gemini"
+  ],
+  "version": "1.0.0"
+}
