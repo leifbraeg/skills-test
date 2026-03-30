@@ -19,12 +19,12 @@ jobs:
         id: changed-skills
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            echo "skills=$(ls -d skills/*/ | xargs -n1 basename | jq -R . | jq -s .)" >> $GITHUB_OUTPUT
+            SKILLS=$(ls -d skills/*/ 2>/dev/null | xargs -n1 basename | tr '\n' ' ' | xargs)
           else
             git fetch origin ${{ github.event.before }}:prev-commit 2>/dev/null || true
-            CHANGED=$(git diff --name-only ${{ github.event.before }}..HEAD -- skills/ 2>/dev/null | grep -o '^skills/[^/]*' | sort -u | xargs -n1 basename || ls -d skills/*/ | xargs -n1 basename)
-            echo "skills=$(echo "$CHANGED" | jq -R . | jq -s .)" >> $GITHUB_OUTPUT
+            SKILLS=$(git diff --name-only ${{ github.event.before }}..HEAD -- skills/ 2>/dev/null | grep -o '^skills/[^/]*' | sort -u | xargs -n1 basename || (ls -d skills/*/ 2>/dev/null | xargs -n1 basename))
           fi
+          echo "skills=$SKILLS" >> $GITHUB_OUTPUT
 
       - name: Scan skills with VirusTotal
         env:
@@ -35,10 +35,10 @@ jobs:
             exit 0
           fi
 
-          SKILLS='${{ steps.changed-skills.outputs.skills }}'
+          SKILLS="${{ steps.changed-skills.outputs.skills }}"
           echo "Scanning skills: $SKILLS"
 
-          echo "$SKILLS" | jq -r '.[]' | while read skill; do
+          for skill in $SKILLS; do
             SKILL_PATH="skills/$skill"
             if [ ! -d "$SKILL_PATH" ]; then
               echo "⚠️  Skill folder not found: $SKILL_PATH"
