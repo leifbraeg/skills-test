@@ -969,22 +969,23 @@
       color: var(--error-fg);
     }
 
-    /* ── Download button (overview pane) ── */
+    /* ── Download button ── */
     .download-btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      margin-top: 10px;
-      padding: 6px 12px;
+      padding: 5px 11px;
       font-size: 12px;
-      border: 1px solid var(--border);
+      font-weight: 500;
+      border: none;
       border-radius: 6px;
-      background: none;
-      color: var(--muted);
+      background: var(--accent);
+      color: var(--accent-fg);
       cursor: pointer;
-      transition: border-color .1s, color .1s, background .1s;
+      transition: opacity .1s;
+      flex-shrink: 0;
     }
-    .download-btn:hover { border-color: var(--accent); color: var(--fg); background: var(--surface); }
+    .download-btn:hover { opacity: .82; }
     .download-btn:disabled { opacity: .4; cursor: not-allowed; }
   </style>
 </head>
@@ -1046,6 +1047,9 @@
       <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noopener">personal access token</a>
       raises this to 5,000/hr. Your token is stored only in this browser and never sent anywhere except GitHub's API.
     </p>
+    <p class="token-desc">
+      A token is also <strong>required to contribute</strong>. It allows you to upload skills and create pull requests on GitHub.
+    </p>
     <div class="token-status-row" id="token-status-row">
       <span class="dot dot-gray" id="token-status-dot"></span>
       <span class="token-status-label" id="token-status-label">Status</span>
@@ -1078,7 +1082,15 @@
   <div class="panel-sticky">
     <div class="panel-header">
       <div class="panel-title" id="panel-title"></div>
-      <button class="close-btn" id="close-btn" title="Close">✕</button>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button class="download-btn" id="panel-download-btn" title="Download .skill">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path d="M7.47 10.78a.75.75 0 0 0 1.06 0l3.75-3.75a.749.749 0 1 0-1.06-1.06L8.75 8.44V1.75a.75.75 0 0 0-1.5 0v6.69L4.78 5.97a.749.749 0 1 0-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 0 0 0 1.5h8.5a.75.75 0 0 0 0-1.5h-8.5Z"/>
+          </svg>
+          Download
+        </button>
+        <button class="close-btn" id="close-btn" title="Close">✕</button>
+      </div>
     </div>
     <div class="panel-tabs" id="panel-tabs">
       <button class="tab-btn active" data-tab="overview">Overview</button>
@@ -1108,9 +1120,18 @@
   // ── GitHub API ──────────────────────────────────────────────────────────────
   const GH        = 'https://api.github.com';
   const TOKEN_KEY = 'gh_skills_token';
+  const USER_KEY  = 'gh_skills_user';
 
   function activeToken() {
     return localStorage.getItem(TOKEN_KEY) || token || '';
+  }
+
+  function getGitHubUser() {
+    try {
+      return JSON.parse(localStorage.getItem(USER_KEY) || 'null');
+    } catch {
+      return null;
+    }
   }
 
   function getHeaders() {
@@ -1340,7 +1361,25 @@
   // ── Detail panel ─────────────────────────────────────────────────────────────
   let activeTab = 'overview';
 
-  function openPanel(skill) {
+  async function getCommitDates(skillFolder) {
+    try {
+      const response = await ghGet(
+        `/repos/${repo}/commits?path=${skillsPath}/${skillFolder}&branch=${branch}&per_page=100`
+      );
+      if (!Array.isArray(response) || response.length === 0) {
+        return { lastEdited: null, added: null, author: null };
+      }
+      const lastEdited = response[0].commit.author.date;
+      const added = response[response.length - 1].commit.author.date;
+      const lastCommitAuthor = response[0].author; // GitHub user object with login, name, etc.
+      return { lastEdited, added, author: lastCommitAuthor };
+    } catch (err) {
+      console.warn('Failed to fetch commit dates:', err);
+      return { lastEdited: null, added: null, author: null };
+    }
+  }
+
+  async function openPanel(skill) {
     $pTitle.textContent = skill.name || skill._folder;
 
     // Build overview pane
@@ -1355,12 +1394,19 @@
       }</div>`;
     }
     const detailFields = metadataFields.filter(f => !['name','description','tags'].includes(f.key));
-    const rows = detailFields.map(f => {
+    let rows = detailFields.map(f => {
       const val = skill[f.key];
       if (val === undefined || val === null || val === '') return '';
       return `<tr><td class="ml">${esc(f.label)}</td><td class="mv">${renderFieldValue(f, val)}</td></tr>`;
     }).join('');
+
+    // Prepend placeholder for author that will be fetched in background
+    rows = `<tr id="author-row"></tr>${rows}`;
+
     if (rows) html += `<table class="meta-table"><tbody>${rows}</tbody></table>`;
+
+    // Add placeholder for last edited/added dates that will be fetched in background
+    html += `<table class="meta-table"><tbody id="date-rows"></tbody></table>`;
     if (skill._githubUrl) {
       html += `<a class="github-link" href="${esc(skill._githubUrl)}" target="_blank" rel="noopener">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -1376,14 +1422,8 @@
         View on GitHub
       </a>`;
     }
-    html += `<div><button class="download-btn" id="download-btn">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-        <path d="M7.47 10.78a.75.75 0 0 0 1.06 0l3.75-3.75a.749.749 0 1 0-1.06-1.06L8.75 8.44V1.75a.75.75 0 0 0-1.5 0v6.69L4.78 5.97a.749.749 0 1 0-1.06 1.06l3.75 3.75ZM3.75 13a.75.75 0 0 0 0 1.5h8.5a.75.75 0 0 0 0-1.5h-8.5Z"/>
-      </svg>
-      Download .skill
-    </button></div>`;
     panes.overview.innerHTML = html;
-    panes.overview.querySelector('#download-btn').addEventListener('click', () => downloadSkill(skill));
+    document.getElementById('panel-download-btn').addEventListener('click', () => downloadSkill(skill));
 
     // Reset lazy panes so they re-fetch on next open
     panes.skill.innerHTML = '';
@@ -1395,6 +1435,51 @@
     $overlay.classList.add('open');
     $panel.classList.add('open');
     $panel.scrollTop = 0;
+
+    // Fetch commit dates in background
+    const dates = await getCommitDates(skill._folder);
+    const authorRow = panes.overview.querySelector('#author-row');
+    const dateRowsTable = panes.overview.querySelector('#date-rows');
+
+    const getDaysAgo = (dateStr) => {
+      const days = Math.floor((new Date() - new Date(dateStr)) / (1000 * 60 * 60 * 24));
+      if (days === 0) return 'today';
+      if (days === 1) return '1 day ago';
+      if (days < 7) return `${days} days ago`;
+      const weeks = Math.floor(days / 7);
+      if (weeks === 1) return '1 week ago';
+      if (weeks < 4) return `${weeks} weeks ago`;
+      const months = Math.floor(days / 30);
+      if (months === 1) return '1 month ago';
+      return `${months} months ago`;
+    };
+
+    // Populate author row
+    if (authorRow && dates.author) {
+      const authorName = dates.author.name || dates.author.login || 'Unknown';
+      const authorHandle = dates.author.login ? `(@${dates.author.login})` : '';
+      authorRow.innerHTML = `<td class="ml">Author</td><td class="mv">${esc(authorName)} <span style="color:var(--muted)">${esc(authorHandle)}</span></td>`;
+    } else if (authorRow) {
+      authorRow.remove();
+    }
+
+    // Populate date rows
+    if (dateRowsTable && (dates.lastEdited || dates.added)) {
+      const dateRows = [];
+      if (dates.lastEdited) {
+        const lastEditedDate = new Date(dates.lastEdited).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        const daysAgo = getDaysAgo(dates.lastEdited);
+        dateRows.push(`<tr><td class="ml">Last Edited</td><td class="mv">${esc(lastEditedDate)} <span style="color:var(--muted)">[${daysAgo}]</span></td></tr>`);
+      }
+      if (dates.added) {
+        const addedDate = new Date(dates.added).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        const daysAgo = getDaysAgo(dates.added);
+        dateRows.push(`<tr><td class="ml">Added</td><td class="mv">${esc(addedDate)} <span style="color:var(--muted)">[${daysAgo}]</span></td></tr>`);
+      }
+      dateRowsTable.innerHTML = dateRows.join('');
+    } else if (dateRowsTable) {
+      dateRowsTable.parentElement.remove();
+    }
   }
 
   function switchTab(tabName, skill) {
@@ -1575,7 +1660,7 @@
 
   async function downloadSkill(skill) {
     if (!skill) return;
-    const $btn = panes.overview.querySelector('#download-btn');
+    const $btn = document.getElementById('panel-download-btn');
     if ($btn) { $btn.disabled = true; $btn.innerHTML = '<span class="spinner" style="width:12px;height:12px;margin:0"></span> Packing…'; }
 
     try {
@@ -1746,6 +1831,7 @@
       if (!r.ok) throw new Error('Invalid token');
       const user = await r.json();
       localStorage.setItem(TOKEN_KEY, val);
+      localStorage.setItem(USER_KEY, JSON.stringify({ login: user.login, name: user.name }));
       closeTokenModal();
       updateTokenDot();
       // Reload skills with the new token
@@ -1764,6 +1850,7 @@
 
   $tokenClearBtn.addEventListener('click', () => {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
     refreshModalStatus();
     closeTokenModal();
     allSkills = [];

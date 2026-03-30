@@ -34,7 +34,6 @@ const CONFIG = {
   // you can still list them here to show them in the detail panel too.
   metadataFields: [
     { key: "tags",    label: "Tags",    type: "array", card: true  },
-    { key: "author",  label: "Author",                 card: true  },
     { key: "version", label: "Version",                card: false },
   ],
 
