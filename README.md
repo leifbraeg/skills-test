@@ -134,7 +134,7 @@ Or download an existing skill from the catalogue and use it as a template.
 ### What happens when you upload
 
 1. You drop in the `.skill` file
-2. A form appears pre-filled from the `skill.json` inside — review and edit the metadata
+2. A form appears — review and edit the metadata
 3. Hit **Open Pull Request**
 4. The page creates a branch named `skill/{folder-name}`, pushes all the files, and opens a PR against `main`
 5. A maintainer reviews and merges it
