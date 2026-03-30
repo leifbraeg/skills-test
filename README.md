@@ -28,11 +28,30 @@ This catalogue is an attempt to fix that. It gives skills a home: a browsable, s
 
 ## How it works
 
+### Frontend Architecture
+
 The page is a static HTML file that talks directly to the GitHub Contents API. On load, it fetches the list of skill folders from the repository, reads the `skill.json` metadata from each one, and renders the catalogue. Nothing is stored server-side.
 
 When you open a skill, the page lazily fetches the `SKILL.md` documentation, scripts, references, and assets on demand — only loading what you actually look at.
 
 When you upload a skill, the page reads the `.skill` file in the browser, unpacks it, and uses the GitHub API to create a new branch and open a pull request with the skill contents. The reviewer merges it, and the skill appears in the catalogue on next load.
+
+### Security Scanning
+
+When a skill is pushed to the repository, GitHub Actions automatically:
+
+1. Creates a ZIP archive of the skill folder
+2. Uploads it to VirusTotal for security analysis
+3. Waits for the scan to complete (polling every 30 seconds)
+4. Extracts the scan results and stores them in `skill.json`
+5. Commits the updated metadata
+
+The scan results are displayed in the skill detail view showing:
+- Security status (clean, suspicious, or findings detected)
+- Number of findings out of total vendors scanned (e.g., "0/63 vendors")
+- Link to the full VirusTotal report
+
+**Setup:** Add a `VIRUSTOTAL_API_KEY` secret to your GitHub repository for automatic scanning.
 
 ### Repository structure
 
