@@ -123,7 +123,7 @@ The recommended way to contribute is through the **Upload skill** button in the 
 
 ### What you need
 
-A `.skill` file — a ZIP archive containing at minimum a `skill.json` and a `SKILL.md`. You can build one by:
+A `.skill` file — a ZIP archive containing at minimum a `SKILL.md`. You can build one by:
 
 1. Creating a folder with your skill's files
 2. Zipping it
