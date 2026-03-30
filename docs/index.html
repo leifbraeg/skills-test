@@ -1151,6 +1151,12 @@
     return r.json();
   }
 
+  async function fetchUrl(url) {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  }
+
   function b64decode(str) {
     return decodeURIComponent(
       atob(str.replace(/\s/g, ''))
@@ -1405,6 +1411,9 @@
 
     if (rows) html += `<table class="meta-table"><tbody>${rows}</tbody></table>`;
 
+    // Add placeholder for security scan results that will be fetched in background
+    html += `<div id="security-scan-section" style="display:none; margin-top: 12px; padding: 10px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border);"></div>`;
+
     // Add placeholder for last edited/added dates that will be fetched in background
     html += `<table class="meta-table"><tbody id="date-rows"></tbody></table>`;
     if (skill._githubUrl) {
@@ -1479,6 +1488,51 @@
       dateRowsTable.innerHTML = dateRows.join('');
     } else if (dateRowsTable) {
       dateRowsTable.parentElement.remove();
+    }
+
+    // Fetch and display VirusTotal scan results
+    const scanSection = panes.overview.querySelector('#security-scan-section');
+    if (skill.virustotalReportUrl) {
+      try {
+        const reportMatch = skill.virustotalReportUrl.match(/\/file\/([a-f0-9]+)/);
+        if (reportMatch) {
+          const fileHash = reportMatch[1];
+          const vtResponse = await fetchUrl(`https://www.virustotal.com/api/v3/files/${fileHash}`);
+
+          if (vtResponse && vtResponse.data && vtResponse.data.attributes) {
+            const attrs = vtResponse.data.attributes;
+            const stats = attrs.last_analysis_stats || {};
+            const malicious = stats.malicious || 0;
+            const undetected = stats.undetected || 0;
+            const suspicious = stats.suspicious || 0;
+            const harmless = stats.harmless || 0;
+            const total = malicious + undetected + suspicious + harmless;
+
+            let statusColor = '#22c55e'; // green
+            let statusText = '✓ Clean';
+            if (malicious > 0) {
+              statusColor = '#ef4444'; // red
+              statusText = `⚠️ ${malicious} detection${malicious !== 1 ? 's' : ''}`;
+            } else if (suspicious > 0) {
+              statusColor = '#f59e0b'; // amber
+              statusText = `⚠️ ${suspicious} suspicious`;
+            }
+
+            scanSection.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                <div style="font-weight: 500; color: ${statusColor};">${statusText}</div>
+                <div style="font-size: 12px; color: var(--muted);">${malicious + suspicious}/${total} vendors flagged</div>
+              </div>
+              <a href="${esc(skill.virustotalReportUrl)}" target="_blank" rel="noopener" style="font-size: 12px; color: var(--accent); text-decoration: none;">
+                View full report on VirusTotal →
+              </a>
+            `;
+            scanSection.style.display = 'block';
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch VirusTotal results:', err);
+      }
     }
   }
 

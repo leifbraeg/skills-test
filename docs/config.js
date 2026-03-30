@@ -32,6 +32,9 @@ const CONFIG = {
   //
   // "name" and "description" are always rendered as the card header/body;
   // you can still list them here to show them in the detail panel too.
+  //
+  // Note: "virustotalReportUrl" and "virustotalScanDate" are auto-populated by
+  // GitHub Actions security scans and should not be manually edited.
   metadataFields: [
     { key: "tags",    label: "Tags",    type: "array", card: true  },
     { key: "version", label: "Version",                card: false },
