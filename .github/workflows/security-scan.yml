@@ -68,8 +68,17 @@ jobs:
               continue
             fi
 
-            # Extract hash from file ID (format: file-{hash})
-            FILE_HASH=$(echo "$FILE_ID" | sed 's/file-//')
+            # Wait for analysis to complete and get SHA-256 hash
+            sleep 2
+            ANALYSIS=$(curl -s -H "x-apikey: $VT_API_KEY" \
+              "https://www.virustotal.com/api/v3/analyses/$FILE_ID")
+
+            FILE_HASH=$(echo "$ANALYSIS" | jq -r '.meta.file_info.sha256 // empty')
+            if [ -z "$FILE_HASH" ]; then
+              echo "❌ Could not get file hash from analysis"
+              continue
+            fi
+
             REPORT_URL="https://www.virustotal.com/gui/file/$FILE_HASH/details"
 
             echo "✅ Scanned $skill: $REPORT_URL"
