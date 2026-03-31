@@ -355,9 +355,31 @@
       cursor: pointer;
       min-width: 140px;
       outline: none;
+      transition: border-color 0.1s, background-color 0.1s;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236b7280' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      padding-right: 28px;
     }
-    .filter-select:focus { border-color: var(--fg); }
-    .filter-select:hover { border-color: var(--accent); }
+    .filter-select:hover {
+      border-color: var(--accent);
+      background-color: var(--bg);
+    }
+    .filter-select:focus {
+      border-color: var(--accent);
+      background-color: var(--bg);
+      box-shadow: 0 0 0 2px rgba(173, 238, 104, 0.1);
+    }
+    .filter-select option {
+      background: var(--surface);
+      color: var(--fg);
+      padding: 4px 8px;
+    }
+    .filter-select option:checked {
+      background: var(--accent);
+      color: var(--accent-fg);
+    }
     .filter-select-label {
       font-size: 12px;
       font-weight: 500;
