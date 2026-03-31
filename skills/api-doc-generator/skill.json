@@ -1,7 +1,8 @@
 {
   "name": "API Doc Generator",
   "description": "Automatically generates comprehensive API documentation from code comments and type signatures.",
-  "tags": ["Documentation", "API", "Claude Code"],
+  "tools": ["Claude Code"],
+  "tags": ["Documentation", "API"],
   "author": "bob",
   "version": "1.5.0",
   "featured": true

@@ -1,7 +1,7 @@
 {
   "name": "Documentation Linter",
   "description": "Validates documentation quality, consistency, and completeness across your project.",
-  "tags": ["Documentation", "Quality", "Linting"],
+  "tags": ["Documentation", "Quality"],
   "author": "frank",
   "version": "1.0.0",
   "featured": true

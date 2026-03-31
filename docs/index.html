@@ -225,6 +225,15 @@
       background: var(--tag-bg);
       color: var(--tag-fg);
     }
+    .card-tool-tag {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      background: rgba(173, 238, 104, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(173, 238, 104, 0.3);
+      font-weight: 500;
+    }
 
     .card-field {
       font-size: 11px;
@@ -308,6 +317,23 @@
       font-size: 12px;
       background: var(--tag-bg);
       color: var(--tag-fg);
+    }
+    .panel-tool-tag {
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      background: rgba(173, 238, 104, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(173, 238, 104, 0.3);
+      font-weight: 500;
+    }
+    .tag-group-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 8px 0 4px 0;
     }
 
     .meta-table { width: 100%; border-collapse: collapse; }
@@ -1332,21 +1358,48 @@
 
   // ── Tags bar ─────────────────────────────────────────────────────────────────
   function buildTagsBar() {
-    const tags = predefinedTags && predefinedTags.length
-      ? predefinedTags
-      : [...new Set(allSkills.flatMap(s => toArray(s.tags)))].sort((a, b) => a.localeCompare(b));
+    const tools = [...new Set(allSkills.flatMap(s => toArray(s.tools)))].sort((a, b) => a.localeCompare(b));
+    const tags = [...new Set(allSkills.flatMap(s => toArray(s.tags)))].sort((a, b) => a.localeCompare(b));
 
-    if (!tags.length) return;
+    if (!tools.length && !tags.length) return;
 
     $tagsBar.innerHTML = `<span class="tags-label">Filter</span>`;
-    tags.forEach(tag => {
-      const btn = document.createElement('button');
-      btn.className = 'tag';
-      btn.textContent = tag;
-      btn.dataset.tag = tag;
-      btn.addEventListener('click', () => toggleTag(tag, btn));
-      $tagsBar.appendChild(btn);
-    });
+
+    // Tools group
+    if (tools.length) {
+      const toolsLabel = document.createElement('span');
+      toolsLabel.className = 'tags-label';
+      toolsLabel.style.marginLeft = '8px';
+      toolsLabel.textContent = 'Tools:';
+      $tagsBar.appendChild(toolsLabel);
+
+      tools.forEach(tool => {
+        const btn = document.createElement('button');
+        btn.className = 'tag';
+        btn.textContent = tool;
+        btn.dataset.tag = tool;
+        btn.addEventListener('click', () => toggleTag(tool, btn));
+        $tagsBar.appendChild(btn);
+      });
+    }
+
+    // Tags group
+    if (tags.length) {
+      const tagsLabel = document.createElement('span');
+      tagsLabel.className = 'tags-label';
+      tagsLabel.style.marginLeft = '16px';
+      tagsLabel.textContent = 'Topics:';
+      $tagsBar.appendChild(tagsLabel);
+
+      tags.forEach(tag => {
+        const btn = document.createElement('button');
+        btn.className = 'tag';
+        btn.textContent = tag;
+        btn.dataset.tag = tag;
+        btn.addEventListener('click', () => toggleTag(tag, btn));
+        $tagsBar.appendChild(btn);
+      });
+    }
 
     $tagsBar.style.display = 'flex';
   }
@@ -1367,12 +1420,13 @@
     const q = query.toLowerCase();
     return allSkills.filter(s => {
       if (activeTags.size) {
-        const skillTags = toArray(s.tags).map(t => t.toLowerCase());
-        const match = [...activeTags].every(t => skillTags.includes(t.toLowerCase()));
+        // Combine tools and tags for filtering
+        const skillItems = [...toArray(s.tools), ...toArray(s.tags)].map(t => t.toLowerCase());
+        const match = [...activeTags].every(t => skillItems.includes(t.toLowerCase()));
         if (!match) return false;
       }
       if (q) {
-        const haystack = [s.name, s.description, ...toArray(s.tags)]
+        const haystack = [s.name, s.description, ...toArray(s.tools), ...toArray(s.tags)]
           .filter(Boolean).join(' ').toLowerCase();
         if (!haystack.includes(q)) return false;
       }
@@ -1431,13 +1485,28 @@
     }
 
     // Card-visible metadata fields
-    const cardFields = metadataFields.filter(f => f.card && f.key !== 'tags');
+    const cardFields = metadataFields.filter(f => f.card && f.key !== 'tags' && f.key !== 'tools');
+    const tools = toArray(skill.tools);
     const tags = toArray(skill.tags);
 
-    if (tags.length || cardFields.length) {
+    if (tools.length || tags.length || cardFields.length) {
       const meta = document.createElement('div');
       meta.className = 'card-meta';
 
+      // Tools row (if any)
+      if (tools.length) {
+        const toolRow = document.createElement('div');
+        toolRow.className = 'card-tag-row';
+        tools.forEach(t => {
+          const span = document.createElement('span');
+          span.className = 'card-tool-tag';
+          span.textContent = t;
+          toolRow.appendChild(span);
+        });
+        meta.appendChild(toolRow);
+      }
+
+      // Tags row (if any)
       if (tags.length) {
         const tagRow = document.createElement('div');
         tagRow.className = 'card-tag-row';
@@ -1523,13 +1592,19 @@
     if (skill.description) {
       html += `<p class="panel-desc">${esc(skill.description)}</p>`;
     }
+    const tools = toArray(skill.tools);
     const tags = toArray(skill.tags);
+    if (tools.length) {
+      html += `<div class="tag-group-label">Tools</div><div class="panel-tags">${
+        tools.map(t => `<span class="panel-tool-tag">${esc(t)}</span>`).join('')
+      }</div>`;
+    }
     if (tags.length) {
-      html += `<div class="panel-tags">${
+      html += `<div class="tag-group-label">Tags</div><div class="panel-tags">${
         tags.map(t => `<span class="panel-tag">${esc(t)}</span>`).join('')
       }</div>`;
     }
-    const detailFields = metadataFields.filter(f => !['name','description','tags'].includes(f.key));
+    const detailFields = metadataFields.filter(f => !['name','description','tags','tools'].includes(f.key));
     let rows = detailFields.map(f => {
       const val = skill[f.key];
       if (val === undefined || val === null || val === '') return '';

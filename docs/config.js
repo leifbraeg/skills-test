@@ -36,6 +36,7 @@ const CONFIG = {
   // Note: "virustotalReportUrl" and "virustotalScanDate" are auto-populated by
   // GitHub Actions security scans and should not be manually edited.
   metadataFields: [
+    { key: "tools",    label: "Tools",    type: "array", card: true  },
     { key: "tags",     label: "Tags",     type: "array", card: true  },
     { key: "featured", label: "Featured",                card: false },
     { key: "version",  label: "Version",                 card: false },

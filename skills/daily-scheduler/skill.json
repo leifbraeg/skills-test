@@ -1,10 +1,8 @@
 {
   "name": "Daily Scheduler",
   "description": "Builds a realistic, prioritized schedule for your day.",
-  "tags": [
-    "Claude",
-    "Gemini"
-  ],
+  "tools": ["Claude", "Gemini"],
+  "tags": ["Productivity", "Scheduling"],
   "version": "1.0.0",
   "virustotalReportUrl": "https://www.virustotal.com/gui/file/c308dd63e607196600ba5a9c81a8ca8222aa397079c8b2fec5a3a5d12ed30d4f/details",
   "virustotalScanDate": "2026-03-30T09:14:47Z",

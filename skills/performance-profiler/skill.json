@@ -1,7 +1,7 @@
 {
   "name": "Performance Profiler",
   "description": "Identifies bottlenecks and generates performance optimization recommendations for your code.",
-  "tags": ["Performance", "Optimization", "Analysis"],
+  "tags": ["Performance", "Optimization"],
   "author": "charlie",
   "version": "1.1.0"
 }

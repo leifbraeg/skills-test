@@ -1,7 +1,7 @@
 {
   "name": "Commit Analyzer",
   "description": "Analyzes git commit patterns to identify code quality trends and team productivity metrics.",
-  "tags": ["Git", "Metrics", "Analytics"],
+  "tags": ["Git", "Analytics"],
   "author": "eve",
   "version": "0.8.0"
 }
