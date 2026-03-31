@@ -229,9 +229,8 @@
       padding: 2px 8px;
       border-radius: 12px;
       font-size: 11px;
-      background: rgba(173, 238, 104, 0.15);
-      color: var(--accent);
-      border: 1px solid rgba(173, 238, 104, 0.3);
+      background: #4a7c59;
+      color: #e8f5e9;
       font-weight: 500;
     }
 
@@ -322,9 +321,8 @@
       padding: 3px 10px;
       border-radius: 20px;
       font-size: 12px;
-      background: rgba(173, 238, 104, 0.15);
-      color: var(--accent);
-      border: 1px solid rgba(173, 238, 104, 0.3);
+      background: #4a7c59;
+      color: #e8f5e9;
       font-weight: 500;
     }
     .tag-group-label {
@@ -334,6 +332,37 @@
       text-transform: uppercase;
       letter-spacing: 0.05em;
       margin: 8px 0 4px 0;
+    }
+
+    /* ── Filter Selects ── */
+    #tags-bar {
+      justify-content: space-between;
+      align-items: center;
+    }
+    .filter-selects {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .filter-select {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      background: var(--surface);
+      color: var(--fg);
+      font-family: inherit;
+      cursor: pointer;
+      min-width: 140px;
+      outline: none;
+    }
+    .filter-select:focus { border-color: var(--fg); }
+    .filter-select:hover { border-color: var(--accent); }
+    .filter-select-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      white-space: nowrap;
     }
 
     .meta-table { width: 100%; border-collapse: collapse; }
@@ -1365,43 +1394,86 @@
 
     $tagsBar.innerHTML = `<span class="tags-label">Filter</span>`;
 
-    // Tools group
+    const selectsContainer = document.createElement('div');
+    selectsContainer.className = 'filter-selects';
+
+    // Tools select
     if (tools.length) {
       const toolsLabel = document.createElement('span');
-      toolsLabel.className = 'tags-label';
-      toolsLabel.style.marginLeft = '8px';
+      toolsLabel.className = 'filter-select-label';
       toolsLabel.textContent = 'Tools:';
-      $tagsBar.appendChild(toolsLabel);
+      selectsContainer.appendChild(toolsLabel);
+
+      const toolsSelect = document.createElement('select');
+      toolsSelect.className = 'filter-select';
+      toolsSelect.multiple = true;
+      toolsSelect.size = 1;
+
+      const placeholder = document.createElement('option');
+      placeholder.textContent = '— All —';
+      placeholder.disabled = true;
+      toolsSelect.appendChild(placeholder);
 
       tools.forEach(tool => {
-        const btn = document.createElement('button');
-        btn.className = 'tag';
-        btn.textContent = tool;
-        btn.dataset.tag = tool;
-        btn.addEventListener('click', () => toggleTag(tool, btn));
-        $tagsBar.appendChild(btn);
+        const option = document.createElement('option');
+        option.value = tool;
+        option.textContent = tool;
+        toolsSelect.appendChild(option);
       });
+
+      toolsSelect.addEventListener('change', () => {
+        updateActiveTags(toolsSelect, tagsSelect);
+      });
+
+      selectsContainer.appendChild(toolsSelect);
+      window.toolsSelect = toolsSelect; // Store reference for filtering
     }
 
-    // Tags group
+    // Tags select
     if (tags.length) {
       const tagsLabel = document.createElement('span');
-      tagsLabel.className = 'tags-label';
-      tagsLabel.style.marginLeft = '16px';
+      tagsLabel.className = 'filter-select-label';
       tagsLabel.textContent = 'Topics:';
-      $tagsBar.appendChild(tagsLabel);
+      selectsContainer.appendChild(tagsLabel);
+
+      const tagsSelect = document.createElement('select');
+      tagsSelect.className = 'filter-select';
+      tagsSelect.multiple = true;
+      tagsSelect.size = 1;
+
+      const placeholder = document.createElement('option');
+      placeholder.textContent = '— All —';
+      placeholder.disabled = true;
+      tagsSelect.appendChild(placeholder);
 
       tags.forEach(tag => {
-        const btn = document.createElement('button');
-        btn.className = 'tag';
-        btn.textContent = tag;
-        btn.dataset.tag = tag;
-        btn.addEventListener('click', () => toggleTag(tag, btn));
-        $tagsBar.appendChild(btn);
+        const option = document.createElement('option');
+        option.value = tag;
+        option.textContent = tag;
+        tagsSelect.appendChild(option);
       });
+
+      tagsSelect.addEventListener('change', () => {
+        updateActiveTags(window.toolsSelect, tagsSelect);
+      });
+
+      selectsContainer.appendChild(tagsSelect);
+      window.tagsSelect = tagsSelect; // Store reference for filtering
     }
 
+    $tagsBar.appendChild(selectsContainer);
     $tagsBar.style.display = 'flex';
+  }
+
+  function updateActiveTags(toolsSelect, tagsSelect) {
+    activeTags.clear();
+    if (toolsSelect) {
+      Array.from(toolsSelect.selectedOptions).forEach(opt => activeTags.add(opt.value));
+    }
+    if (tagsSelect) {
+      Array.from(tagsSelect.selectedOptions).forEach(opt => activeTags.add(opt.value));
+    }
+    render();
   }
 
   function toggleTag(tag, btn) {
