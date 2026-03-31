@@ -1,0 +1,8 @@
+{
+  "name": "Tone Adjuster",
+  "description": "Rewrites text in different tones: formal, casual, sarcastic, encouraging, or empathetic.",
+  "tags": ["Writing", "Content", "Claude Code"],
+  "author": "dev-team",
+  "version": "1.2.0",
+  "featured": true
+}

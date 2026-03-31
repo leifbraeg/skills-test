@@ -1,0 +1,7 @@
+{
+  "name": "Query Optimizer",
+  "description": "Analyzes database queries and suggests optimization strategies for improved performance.",
+  "tags": ["Database", "SQL", "Performance"],
+  "author": "henry",
+  "version": "1.2.0"
+}

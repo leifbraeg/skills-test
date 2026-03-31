@@ -1,0 +1,7 @@
+{
+  "name": "Dependency Auditor",
+  "description": "Scans dependencies for vulnerabilities, outdated packages, and license compliance issues.",
+  "tags": ["Security", "Dependencies", "Auditing"],
+  "author": "grace",
+  "version": "1.4.0"
+}

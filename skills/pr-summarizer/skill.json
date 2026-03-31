@@ -1,0 +1,7 @@
+{
+  "name": "PR Summarizer",
+  "description": "Generates concise summaries of pull request changes with impact analysis and reviewer highlights.",
+  "tags": ["Git", "Pull Requests", "Documentation"],
+  "author": "iris",
+  "version": "0.7.0"
+}

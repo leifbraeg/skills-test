@@ -1,0 +1,7 @@
+{
+  "name": "Test Case Generator",
+  "description": "Automatically generates comprehensive unit and integration test cases based on function signatures and logic.",
+  "tags": ["Testing", "QA", "Code Generation"],
+  "author": "diana",
+  "version": "1.3.0"
+}

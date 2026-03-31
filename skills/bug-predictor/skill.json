@@ -1,0 +1,7 @@
+{
+  "name": "Bug Predictor",
+  "description": "Analyzes code for common bug patterns and predicts potential runtime errors before execution.",
+  "tags": ["Testing", "Code Analysis", "Cursor"],
+  "author": "alice",
+  "version": "0.9.0"
+}
