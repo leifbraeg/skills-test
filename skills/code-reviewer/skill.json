@@ -1,8 +1,21 @@
 {
   "name": "Code Reviewer",
   "description": "Performs thorough code reviews with security analysis.",
-  "tags": ["Claude Code", "Cursor", "Gemini", "Something else"],
+  "tags": [
+    "Claude Code",
+    "Cursor",
+    "Gemini",
+    "Something else"
+  ],
   "author": "alice",
   "version": "1.0.0",
-  "featured": true
+  "featured": true,
+  "virustotalReportUrl": "https://www.virustotal.com/gui/file/48c9f6a8ab398ed0ee9fa914829fddee3645246382cb84a7f3d4cab52696a96e/details",
+  "virustotalScanDate": "2026-03-31T15:01:20Z",
+  "virustotalStats": {
+    "malicious": 0,
+    "suspicious": 0,
+    "undetected": 66,
+    "timeout": 0
+  }
 }
