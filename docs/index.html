@@ -1490,18 +1490,34 @@
   // ── Filter ──────────────────────────────────────────────────────────────
   function filtered() {
     const q = query.toLowerCase();
+
+    // Separate active tags into tools and topics
+    const allToolsSet = new Set(allSkills.flatMap(s => toArray(s.tools)));
+    const selectedTools = new Set([...activeTags].filter(t => allToolsSet.has(t)));
+    const selectedTopics = new Set([...activeTags].filter(t => !allToolsSet.has(t)));
+
     return allSkills.filter(s => {
-      if (activeTags.size) {
-        // Combine tools and tags for filtering
-        const skillItems = [...toArray(s.tools), ...toArray(s.tags)].map(t => t.toLowerCase());
-        const match = [...activeTags].every(t => skillItems.includes(t.toLowerCase()));
-        if (!match) return false;
+      // Tool filter: if tools selected, skill must have at least ONE (OR logic)
+      if (selectedTools.size > 0) {
+        const skillTools = toArray(s.tools).map(t => t.toLowerCase());
+        const hasMatchingTool = [...selectedTools].some(t => skillTools.includes(t.toLowerCase()));
+        if (!hasMatchingTool) return false;
       }
+
+      // Topic filter: if topics selected, skill must have at least ONE (OR logic)
+      if (selectedTopics.size > 0) {
+        const skillTopics = toArray(s.tags).map(t => t.toLowerCase());
+        const hasMatchingTopic = [...selectedTopics].some(t => skillTopics.includes(t.toLowerCase()));
+        if (!hasMatchingTopic) return false;
+      }
+
+      // Search filter
       if (q) {
         const haystack = [s.name, s.description, ...toArray(s.tools), ...toArray(s.tags)]
           .filter(Boolean).join(' ').toLowerCase();
         if (!haystack.includes(q)) return false;
       }
+
       return true;
     }).sort((a, b) => {
       // Featured items first
