@@ -162,10 +162,26 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      position: relative;
     }
     .card:hover {
       border-color: var(--tag-active-bg);
       box-shadow: 0 1px 6px rgba(0,0,0,.06);
+    }
+    .card.featured {
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 16px rgba(173, 238, 104, .15);
+    }
+    .card.featured:hover {
+      box-shadow: 0 0 20px rgba(173, 238, 104, .25);
+    }
+
+    .card-star-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 20px;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,.1));
     }
 
     .card-name {
@@ -1335,7 +1351,16 @@
   function buildCard(skill) {
     const card = document.createElement('div');
     card.className = 'card';
+    if (skill.featured) card.classList.add('featured');
     card.addEventListener('click', () => openPanelWrapped(skill));
+
+    // Star badge for featured skills
+    if (skill.featured) {
+      const badge = document.createElement('div');
+      badge.className = 'card-star-badge';
+      badge.textContent = '⭐';
+      card.appendChild(badge);
+    }
 
     // Name
     const name = document.createElement('div');

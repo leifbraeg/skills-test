@@ -3,5 +3,6 @@
   "description": "Performs thorough code reviews with security analysis.",
   "tags": ["Claude Code", "Cursor", "Gemini", "Something else"],
   "author": "alice",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "featured": true
 }
