@@ -987,6 +987,32 @@
     }
     .download-btn:hover { opacity: .82; }
     .download-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── Change History ── */
+    .change-history-box {
+      padding: 12px; border-radius: 6px; background: var(--surface); border: 1px solid var(--border);
+    }
+    .change-history-header {
+      font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+    }
+    .change-history-version {
+      display: inline-block; background: var(--accent); color: var(--accent-fg); padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 500;
+    }
+    .change-history-list { display: flex; flex-direction: column; gap: 0; }
+    .change-history-entry {
+      display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--border);
+    }
+    .change-history-entry:last-child { border-bottom: none; }
+    .ch-avatar {
+      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; object-fit: cover;
+    }
+    .ch-avatar-fallback {
+      width: 24px; height: 24px; border-radius: 50%; background: var(--surface); border: 1px solid var(--border); font-size: 10px; display: flex; align-items: center; justify-content: center; color: var(--muted); flex-shrink: 0; font-weight: 500;
+    }
+    .ch-content { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+    .ch-author { font-size: 12px; font-weight: 500; }
+    .ch-message { font-size: 12px; color: var(--muted); }
+    .ch-time { font-size: 11px; color: var(--muted); }
   </style>
 </head>
 <body>
@@ -1373,7 +1399,7 @@
         `/repos/${repo}/commits?path=${skillsPath}/${skillFolder}&branch=${branch}&per_page=100`
       );
       if (!Array.isArray(response) || response.length === 0) {
-        return { lastEdited: null, added: null, author: null };
+        return { lastEdited: null, added: null, author: null, history: [] };
       }
       const lastEdited = response[0].commit.author.date;
       const added = response[response.length - 1].commit.author.date;
@@ -1389,10 +1415,24 @@
         }
       }
 
-      return { lastEdited, added, author: originalAuthor };
+      // Extract human-only commits (exclude bot commits like virustotal scans)
+      const humanCommits = response.filter(c => {
+        const author = c.author;
+        return author && !author.login?.includes('[bot]') && author.type !== 'Bot';
+      });
+
+      const history = humanCommits.slice(0, 10).map(c => ({
+        message: c.commit.message.split('\n')[0], // first line only
+        date: c.commit.author.date,
+        authorName: c.author?.name || c.commit.author.name,
+        authorLogin: c.author?.login || null,
+        authorAvatar: c.author?.avatar_url || null,
+      }));
+
+      return { lastEdited, added, author: originalAuthor, history };
     } catch (err) {
       console.warn('Failed to fetch commit dates:', err);
-      return { lastEdited: null, added: null, author: null };
+      return { lastEdited: null, added: null, author: null, history: [] };
     }
   }
 
@@ -1427,6 +1467,10 @@
 
     // Add placeholder for security scan results that will be fetched in background
     html += `<div id="security-scan-section" style="display:none; margin-top: 18px;"></div>`;
+
+    // Add placeholder for change history that will be fetched in background
+    html += `<div id="change-history-section" style="display:none; margin-top: 18px;"></div>`;
+
     if (skill._githubUrl) {
       html += `<a class="github-link" href="${esc(skill._githubUrl)}" target="_blank" rel="noopener">
         <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -1538,6 +1582,60 @@
 
       scanSection.innerHTML = scanHtml;
       scanSection.style.display = 'block';
+    }
+
+    // Display change history
+    const historySection = panes.overview.querySelector('#change-history-section');
+    if (dates.history && dates.history.length > 0) {
+      let historyHtml = `
+        <div class="change-history-box">
+          <div class="change-history-header">
+            Change History
+            ${skill.version ? `<span class="change-history-version">v${esc(skill.version)}</span>` : ''}
+          </div>
+          <div class="change-history-list">
+      `;
+
+      dates.history.forEach(commit => {
+        const commitDate = new Date(commit.date);
+        const daysAgo = getDaysAgo(commit.date);
+        const commitDateFormatted = commitDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+        let avatarHtml = '';
+        if (commit.authorAvatar) {
+          avatarHtml = `<img src="${esc(commit.authorAvatar)}" alt="${esc(commit.authorName)}" class="ch-avatar">`;
+        } else {
+          // Fallback: initials circle
+          const initials = commit.authorName
+            .split(' ')
+            .map(n => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+          avatarHtml = `<div class="ch-avatar-fallback" title="${esc(commit.authorName)}">${esc(initials)}</div>`;
+        }
+
+        historyHtml += `
+          <div class="change-history-entry">
+            ${avatarHtml}
+            <div class="ch-content">
+              <div class="ch-author">${esc(commit.authorName)}</div>
+              <div class="ch-message">${esc(commit.message)}</div>
+              <div class="ch-time">${commitDateFormatted} [${daysAgo}]</div>
+            </div>
+          </div>
+        `;
+      });
+
+      historyHtml += `
+          </div>
+        </div>
+      `;
+
+      historySection.innerHTML = historyHtml;
+      historySection.style.display = 'block';
+    } else if (historySection) {
+      historySection.style.display = 'none';
     }
   }
 
