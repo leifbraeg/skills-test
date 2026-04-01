@@ -1,0 +1,11 @@
+{
+  "name": "Aperio Update",
+  "description": "Updates the Aperio notes",
+  "tools": [
+    "Claude"
+  ],
+  "tags": [
+    "Documentation"
+  ],
+  "version": "1.0"
+}
