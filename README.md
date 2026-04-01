@@ -1,208 +1,96 @@
 # AI Skills Library
 
-A lightweight catalogue for AI skills — built on top of GitHub, deployed as a static page, and designed so that anyone can contribute without touching any infrastructure.
-
----
+A browsable, searchable library for AI assistant skills. Built on GitHub, deployed as a static site, no backend required.
 
 ## What is this?
 
-AI skills are reusable instructions that tell an AI assistant how to perform a specific task — a code reviewer, a meeting summariser, a tone checker, a PR description writer. They combine a prompt with context, examples, scripts, and reference material to produce consistent, reliable behaviour.
+Skills are reusable instructions that tell an AI assistant how to perform a task (code review, meeting summaries, tone checking, etc.). This catalogue gives them a searchable home where anyone can find, use, and contribute skills without needing to manage infrastructure or understand Git.
 
-The problem with skills is that they tend to accumulate in personal notes, Slack threads, and individual tool configs. They don't get shared, they don't get improved, and they disappear when someone leaves.
+## Quick Start
 
-This catalogue is an attempt to fix that. It gives skills a home: a browsable, searchable library where anyone can find what exists, understand how to use it, and contribute their own. The interface abstracts the technical side away so that contributing a skill feels like filling out a form, not making a code change.
+### Using the Library
 
----
+1. **Search** — type in the search bar to find skills by name or description
+2. **Filter** — use the tag dropdowns to narrow results (tags combine with OR within categories, AND between them)
+3. **Open a skill** — click any card to view full documentation, scripts, and references
+4. **Download** — export any skill as a portable `.skill` file (a ZIP archive)
 
-## Principles
+### Contributing a Skill
 
-**GitHub is the backend.** There is no database, no server, no CMS to maintain. Skills live as files in a Git repository. Every addition, change, and deletion is a pull request — with history, authorship, review, and rollback built in for free.
+**Via browser (recommended):**
+1. Click **Upload skill** button (top-right)
+2. Drop in a `.skill` file (ZIP archive with `SKILL.md` at minimum)
+3. Edit metadata in the form
+4. Click **Open Pull Request** — this creates a branch and PR automatically
 
-**The interface exists to lower the barrier.** Not everyone is comfortable opening a pull request. The catalogue lets anyone upload a `.skill` file through a browser and have it land as a PR automatically. The Git workflow happens in the background.
+**Via Git:**
+1. Create a folder under `skills/your-skill-name/` with at least `skill.json` and `SKILL.md`
+2. Open a pull request against `main`
 
-**Skills are portable.** Every skill can be downloaded as a `.skill` file, which is a standard ZIP archive containing everything — documentation, scripts, assets, metadata. Rename it to `.zip` to inspect it. It works with any tool that can unzip files.
+You'll need a GitHub [personal access token](https://github.com/settings/tokens?type=beta) with **Contents: Read and Write** and **Pull requests: Write** permissions to contribute via browser.
 
-**No build step.** The frontend is two files: `index.html` and `config.js`. No framework, no bundler, no CI pipeline required. Drop them anywhere and they work.
+## How It Works
 
----
+- **No database** — Skills are files stored in GitHub. Every change is a pull request with full history and review.
+- **No backend** — The frontend is two static files (`index.html` and `config.js`). It reads directly from GitHub's API.
+- **Portable** — Download any skill as a `.skill` file (standard ZIP). Rename to `.zip` to inspect contents.
+- **Security scanning** — GitHub Actions automatically scans uploaded skills with VirusTotal and stores results in metadata.
 
-## How it works
-
-### Frontend Architecture
-
-The page is a static HTML file that talks directly to the GitHub Contents API. On load, it fetches the list of skill folders from the repository, reads the `skill.json` metadata from each one, and renders the catalogue. Nothing is stored server-side.
-
-When you open a skill, the page lazily fetches the `SKILL.md` documentation, scripts, references, and assets on demand — only loading what you actually look at.
-
-When you upload a skill, the page reads the `.skill` file in the browser, unpacks it, and uses the GitHub API to create a new branch and open a pull request with the skill contents. The reviewer merges it, and the skill appears in the catalogue on next load.
-
-### Security Scanning
-
-When a skill is pushed to the repository, GitHub Actions automatically:
-
-1. Creates a ZIP archive of the skill folder
-2. Uploads it to VirusTotal for security analysis
-3. Waits for the scan to complete (polling every 30 seconds)
-4. Extracts the scan results and stores them in `skill.json`
-5. Commits the updated metadata
-
-The scan results are displayed in the skill detail view showing:
-- Security status (clean, suspicious, or findings detected)
-- Vendor scan summary (e.g., "Passed by all 63 vendors" for clean scans, or "2 findings among 63 vendors" for issues)
-- Link to the full VirusTotal report
-
-**Setup:** Add a `VIRUSTOTAL_API_KEY` secret to your GitHub repository for automatic scanning.
-
-### Repository structure
+### Folder Structure
 
 ```
 skills/
 ├── code-reviewer/
-│   ├── skill.json        ← metadata (name, description, tags, author, …)
-│   ├── SKILL.md          ← full documentation and prompt instructions
-│   ├── scripts/          ← executable scripts the skill uses
-│   ├── references/       ← reference documents and context
-│   └── assets/           ← images and other supporting files
-├── meeting-summariser/
-│   └── …
-└── …
+│   ├── skill.json        ← metadata (name, description, tags, version, etc.)
+│   ├── SKILL.md          ← documentation and prompt instructions
+│   ├── scripts/          ← optional executable scripts
+│   ├── references/       ← optional reference documents
+│   └── assets/           ← optional images and files
+└── meeting-summariser/
+    └── …
 ```
 
-Each skill is a folder. The folder name becomes the skill's identifier. Everything else lives inside it.
+## Setup Your Own Library
 
-### skill.json
+### 1. Configure
 
-```json
-{
-  "name": "Code Reviewer",
-  "description": "Reviews code for bugs and correctness issues.",
-  "tags": ["Claude Code", "Cursor"],
-  "author": "your-name",
-  "version": "1.0.0"
-}
-```
-
-The fields shown in the catalogue are fully configurable in `config.js`. You can add any field you want — it will appear in the skill detail view automatically.
-
-### SKILL.md
-
-The main documentation file. Starts with a YAML frontmatter block, followed by markdown:
-
-```
----
-name: code-reviewer
-description: Reviews code for bugs…
----
-
-## What this skill does
-
-…
-```
-
-The frontmatter is rendered as a metadata table. The rest is rendered as formatted markdown with syntax-highlighted code blocks.
-
----
-
-## Using the catalogue
-
-**Search** — type anything in the search bar to filter skills by name, description, or tag.
-
-**Filter by tag** — click a tag in the filter bar to narrow the list. Multiple tags narrow further.
-
-**Open a skill** — click any card to open the detail panel. Switch between tabs to read the documentation, view scripts, browse references, and see assets.
-
-**Download a skill** — click **Download .skill** in the Overview tab to get a portable archive of the entire skill folder.
-
-**Dark mode** — toggle with the button in the top-right corner. Your preference is saved across sessions.
-
----
-
-## Contributing a skill
-
-The recommended way to contribute is through the **Upload skill** button in the top-right corner.
-
-### What you need
-
-A `.skill` file — a ZIP archive containing at minimum a `SKILL.md`. You can build one by:
-
-1. Creating a folder with your skill's files
-2. Zipping it
-3. Renaming the `.zip` to `.skill`
-
-Or download an existing skill from the catalogue and use it as a template.
-
-### What happens when you upload
-
-1. You drop in the `.skill` file
-2. A form appears — review and edit the metadata
-3. Hit **Open Pull Request**
-4. The page creates a branch named `skill/{folder-name}`, pushes all the files, and opens a PR against `main`
-5. A maintainer reviews and merges it
-
-You need a GitHub account and a [personal access token](https://github.com/settings/tokens?type=beta) with **Contents: Read and Write** and **Pull requests: Write** permissions on the repository. Paste your token into the token modal (the icon next to the upload button) — it's stored only in your browser.
-
-### Contributing directly via Git
-
-If you prefer working directly in the repository:
-
-1. Fork or clone the repo
-2. Create your skill folder under `skills/your-skill-name/`
-3. Add at minimum `skill.json` and `SKILL.md`
-4. Open a pull request against `main`
-
----
-
-## Setup
-
-### 1. Fork or create the skills repository
-
-This can be any GitHub repository — public or private. The catalogue reads from wherever you point it.
-
-### 2. Configure
-
-Edit `config.js`:
+Edit `docs/config.js`:
 
 ```js
 const CONFIG = {
-  repo:       "your-username/your-repo",
-  branch:     "main",
-  skillsPath: "skills",
-  skillFile:  "skill.json",
-  token:      "",
-  title:      "AI Skills Library",
-  metadataFields: [
-    { key: "tags",    label: "Tags",    type: "array", card: true  },
-    { key: "author",  label: "Author",                 card: true  },
-    { key: "version", label: "Version",                card: false },
+  repo: "your-username/your-repo",     // where skills are stored
+  branch: "main",                       // which branch to read
+  skillsPath: "skills",                 // folder containing skill folders
+  title: "My Skills Library",           // page title
+  metadataFields: [                     // which skill.json fields to display
+    { key: "tools", label: "Tools", type: "array", card: true },
+    { key: "tags", label: "Tags", type: "array", card: true },
+    { key: "version", label: "Version", card: false },
   ],
-  predefinedTags: [],
+  predefinedTags: [],                   // leave empty to auto-detect
 };
 ```
 
-### 3. Deploy to GitHub Pages
+### 2. Deploy
 
-Put `index.html` and `config.js` in a `docs/` folder in your repository. Go to **Settings → Pages**, set the source to the `main` branch and `/docs` folder. Your catalogue will be live at `https://<username>.github.io/<repo>/`.
+Push `index.html` and `config.js` to `docs/` folder in your repo. In GitHub:
 
-No build step. No GitHub Actions required.
+1. Go to **Settings → Pages**
+2. Set source to `main` branch, `/docs` folder
+3. Your library will be live at `https://<username>.github.io/<repo>/`
 
----
+No build step, no Actions required.
 
-## Rate limits
+## API Rate Limits
 
-The GitHub API allows 60 requests per hour without authentication. Each skill folder uses one request on load, plus more when you browse tabs or download. With more than ~20 skills or multiple users, you will hit this limit.
-
-To raise it to 5,000 requests per hour, add a [personal access token](https://github.com/settings/tokens?type=beta) through the token modal in the top-right corner. The token is stored in your browser's `localStorage` and never sent anywhere other than the GitHub API.
-
-For a shared deployment, each user should add their own token rather than sharing one.
-
----
+GitHub allows 60 API requests/hour unauthenticated. With more than ~20 skills or multiple users, you'll hit this limit. Add a [personal access token](https://github.com/settings/tokens?type=beta) in the token modal (top-right) to raise it to 5,000 requests/hour. Token is stored locally in your browser only.
 
 ## Dependencies
 
-Loaded from CDN at runtime. No install or build step.
+Loaded from CDN at runtime. No installation needed.
 
 | Library | Version | Purpose |
 |---|---|---|
-| [marked](https://github.com/markedjs/marked) | 12 | Renders `SKILL.md` as HTML |
-| [highlight.js](https://highlightjs.org) | 11 | Syntax highlighting for code files |
-| [JSZip](https://stuk.github.io/jszip/) | 3 | Packs and unpacks `.skill` files |
+| [marked](https://github.com/markedjs/marked) | 12 | Markdown rendering |
+| [highlight.js](https://highlightjs.org) | 11 | Code syntax highlighting |
+| [JSZip](https://stuk.github.io/jszip/) | 3 | Packing/unpacking `.skill` files |
